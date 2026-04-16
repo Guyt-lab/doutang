@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import '../theme/doutang_theme.dart';
 import '../models/listing.dart';
-import '../services/score_service.dart';
 
 class ListingCard extends StatelessWidget {
   const ListingCard({
     super.key,
     required this.listing,
     this.matchingScore,
+    this.visitScore,
     this.onTap,
   });
 
   final Listing listing;
   final double? matchingScore;
+  final double? visitScore;
   final VoidCallback? onTap;
 
   @override
@@ -80,28 +81,34 @@ class ListingCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodySmall),
                 ]),
               ],
-              if (matchingScore != null) ...[
+              if (matchingScore != null || visitScore != null) ...[
                 const SizedBox(height: DSpacing.sm),
                 Row(children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: matchingScore,
-                        backgroundColor: DoutangTheme.border,
-                        color: DoutangTheme.scoreColor(matchingScore! * 5),
-                        minHeight: 4,
+                  if (matchingScore != null) ...[
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: matchingScore,
+                          backgroundColor: DoutangTheme.border,
+                          color: DoutangTheme.scoreColor(matchingScore! * 5),
+                          minHeight: 4,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: DSpacing.sm),
-                  Text(
-                    '${(matchingScore! * 100).round()}% match',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: DoutangTheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
+                    const SizedBox(width: DSpacing.sm),
+                    Text(
+                      '${(matchingScore! * 100).round()}% match',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: DoutangTheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                  if (visitScore != null) ...[
+                    if (matchingScore != null) const SizedBox(width: DSpacing.sm),
+                    _VisitedBadge(score: visitScore!),
+                  ],
                 ]),
               ],
             ],
@@ -129,7 +136,7 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.12),
+        color: _color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -137,6 +144,32 @@ class _StatusChip extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           color: _color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _VisitedBadge extends StatelessWidget {
+  const _VisitedBadge({required this.score});
+  final double score;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = DoutangTheme.scoreColor(score / 20);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        'Visité · ${score.round()}/100',
+        style: TextStyle(
+          fontSize: 11,
+          color: color,
           fontWeight: FontWeight.w600,
         ),
       ),

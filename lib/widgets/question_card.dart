@@ -89,38 +89,52 @@ class _QuestionCardState extends State<QuestionCard> {
       decoration: BoxDecoration(
         color: DoutangTheme.cardBg,
         borderRadius: DRadius.card,
-        border: Border(
-          left: BorderSide(color: _levelColor, width: 3),
-          top: const BorderSide(color: DoutangTheme.border, width: 0.5),
-          right: const BorderSide(color: DoutangTheme.border, width: 0.5),
-          bottom: const BorderSide(color: DoutangTheme.border, width: 0.5),
-        ),
+        border: Border.all(color: DoutangTheme.border, width: 0.5),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(DSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              q.text,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: DoutangTheme.textPrimary,
-              ),
-            ),
-            if (q.hint != null) ...[
-              const SizedBox(height: DSpacing.xs),
-              Text(
-                q.hint!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: DoutangTheme.textSecondary,
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: _levelColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(DRadius.md),
+                  bottomLeft: Radius.circular(DRadius.md),
                 ),
               ),
-            ],
-            const SizedBox(height: DSpacing.sm + 2),
-            _buildInput(),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(DSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      q.text,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: DoutangTheme.textPrimary,
+                      ),
+                    ),
+                    if (q.hint != null) ...[
+                      const SizedBox(height: DSpacing.xs),
+                      Text(
+                        q.hint!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: DoutangTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: DSpacing.sm + 2),
+                    _buildInput(),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -151,7 +165,7 @@ class _QuestionCardState extends State<QuestionCard> {
             child: Icon(
               filled ? Icons.star_rounded : Icons.star_outline_rounded,
               size: 34,
-              color: filled ? DoutangTheme.accent : DoutangTheme.border,
+              color: filled ? DoutangTheme.accent : DoutangTheme.textHint,
             ),
           ),
         );
@@ -209,8 +223,8 @@ class _QuestionCardState extends State<QuestionCard> {
       bgColor = const Color(0xFFE9ECEF);
       textColor = DoutangTheme.textSecondary;
     } else {
-      // Oui / Non non sélectionnés : gris foncé sur fond blanc légèrement grisé
-      borderColor = DoutangTheme.border;
+      // Oui / Non non sélectionnés
+      borderColor = DoutangTheme.textHint;
       bgColor = DoutangTheme.surface;
       textColor = DoutangTheme.textSecondary;
     }

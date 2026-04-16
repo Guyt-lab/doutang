@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../models/listing.dart';
+import '../../models/visit.dart';
 import '../../services/listing_storage_service.dart';
+import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
 import '../../widgets/empty_state.dart';
@@ -16,6 +18,7 @@ class ListingsScreen extends StatefulWidget {
 
 class _ListingsScreenState extends State<ListingsScreen> {
   List<Listing> _listings = [];
+  Map<String, double> _visitScoreByListingId = {};
   ListingStatus? _filterStatus;
   bool _isLoading = true;
 
@@ -27,9 +30,13 @@ class _ListingsScreenState extends State<ListingsScreen> {
 
   Future<void> _loadListings() async {
     final listings = await ListingStorageService.load();
+    final visits = await VisitStorageService.load();
     if (mounted) {
       setState(() {
         _listings = listings;
+        _visitScoreByListingId = {
+          for (final v in visits) v.listingId: v.score,
+        };
         _isLoading = false;
       });
     }
@@ -79,6 +86,7 @@ class _ListingsScreenState extends State<ListingsScreen> {
                           return ListingCard(
                             listing: listings[index],
                             matchingScore: 0.85,
+                            visitScore: _visitScoreByListingId[listings[index].id],
                             onTap: () => Navigator.pushNamed(
                               context,
                               AppRoutes.listingDetail,
