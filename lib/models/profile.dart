@@ -70,6 +70,8 @@ class SearchCriteria {
   final double? budgetMax;
   final double? surfaceMin;
   final int? roomsMin;
+  /// 'location' ou 'achat'
+  final String? projectType;
   final List<String> zones;
   final List<String> tags;
 
@@ -77,6 +79,7 @@ class SearchCriteria {
     this.budgetMax,
     this.surfaceMin,
     this.roomsMin,
+    this.projectType,
     List<String>? zones,
     List<String>? tags,
   })  : zones = zones ?? [],
@@ -86,6 +89,7 @@ class SearchCriteria {
     double? budgetMax,
     double? surfaceMin,
     int? roomsMin,
+    String? projectType,
     List<String>? zones,
     List<String>? tags,
   }) {
@@ -93,6 +97,7 @@ class SearchCriteria {
       budgetMax: budgetMax ?? this.budgetMax,
       surfaceMin: surfaceMin ?? this.surfaceMin,
       roomsMin: roomsMin ?? this.roomsMin,
+      projectType: projectType ?? this.projectType,
       zones: zones ?? this.zones,
       tags: tags ?? this.tags,
     );
@@ -102,6 +107,7 @@ class SearchCriteria {
         'budget_max': budgetMax,
         'surface_min': surfaceMin,
         'rooms_min': roomsMin,
+        'project_type': projectType,
         'zones': zones,
         'tags': tags,
       };
@@ -110,6 +116,7 @@ class SearchCriteria {
         budgetMax: (json['budget_max'] as num?)?.toDouble(),
         surfaceMin: (json['surface_min'] as num?)?.toDouble(),
         roomsMin: (json['rooms_min'] as num?)?.toInt(),
+        projectType: json['project_type'] as String?,
         zones: List<String>.from(json['zones'] as List? ?? []),
         tags: List<String>.from(json['tags'] as List? ?? []),
       );
