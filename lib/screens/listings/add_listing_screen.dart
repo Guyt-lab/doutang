@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../models/listing.dart';
+import '../../services/listing_parser_service.dart';
+import '../../services/listing_storage_service.dart';
+import '../../services/profile_storage_service.dart';
 import '../../theme/doutang_theme.dart';
 
 class AddListingScreen extends StatefulWidget {
@@ -15,7 +21,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final _priceController = TextEditingController();
   final _surfaceController = TextEditingController();
   final _addressController = TextEditingController();
+
   bool _isParsing = false;
+  bool _isSaving = false;
   bool _showManual = false;
 
   @override
@@ -28,23 +36,83 @@ class _AddListingScreenState extends State<AddListingScreen> {
     super.dispose();
   }
 
+  // ── Parsing URL ───────────────────────────────────────────────────────────
+
   Future<void> _parseUrl() async {
-    if (_urlController.text.isEmpty) return;
+    final url = _urlController.text.trim();
+    if (url.isEmpty) return;
+
     setState(() => _isParsing = true);
 
-    // TODO: Implémenter le parsing réel
-    await Future.delayed(const Duration(seconds: 1));
+    final parsed = await ListingParserService.parseUrl(url);
 
+    if (!mounted) return;
     setState(() {
       _isParsing = false;
       _showManual = true;
-      // Valeurs mockées — seront remplacées par le parser
-      _titleController.text = 'Appart 2P Paris 11 — extrait de Jinka';
-      _priceController.text = '1350';
-      _surfaceController.text = '48';
-      _addressController.text = 'Paris 11ème';
+      if (parsed.title != null) _titleController.text = parsed.title!;
+      if (parsed.price != null) {
+        _priceController.text = parsed.price!.toInt().toString();
+      }
+      if (parsed.surface != null) {
+        _surfaceController.text = parsed.surface!.toInt().toString();
+      }
+      if (parsed.address != null) _addressController.text = parsed.address!;
     });
+
+    if (!parsed.hasAnyData && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Impossible d\'extraire les infos — complète manuellement',
+          ),
+          backgroundColor: DoutangTheme.textSecondary,
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: Colors.white,
+            onPressed: () {},
+          ),
+        ),
+      );
+    }
   }
+
+  // ── Sauvegarde ────────────────────────────────────────────────────────────
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSaving = true);
+
+    // Charge le prénom du profil local, fallback 'Moi'
+    final profile = await ProfileStorageService.load();
+    final owner = profile?.owner ?? 'Moi';
+
+    final listing = Listing(
+      url: _urlController.text.trim().isEmpty
+          ? null
+          : _urlController.text.trim(),
+      title: _titleController.text.trim(),
+      price: _priceController.text.isEmpty
+          ? null
+          : double.tryParse(_priceController.text),
+      surface: _surfaceController.text.isEmpty
+          ? null
+          : double.tryParse(_surfaceController.text),
+      address: _addressController.text.trim().isEmpty
+          ? null
+          : _addressController.text.trim(),
+      addedBy: owner,
+    );
+
+    await ListingStorageService.add(listing);
+
+    if (mounted) {
+      setState(() => _isSaving = false);
+      Navigator.pop(context);
+    }
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -59,15 +127,17 @@ class _AddListingScreenState extends State<AddListingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Import URL
+              // ── Import URL ──
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(DSpacing.md),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Import depuis Jinka',
-                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Import depuis Jinka',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: DSpacing.sm),
                       Text(
                         'Copie l\'URL d\'une annonce Jinka et colle-la ici',
@@ -81,6 +151,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
                           prefixIcon: Icon(Icons.link),
                         ),
                         keyboardType: TextInputType.url,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        ],
                       ),
                       const SizedBox(height: DSpacing.md),
                       SizedBox(
@@ -92,12 +165,14 @@ class _AddListingScreenState extends State<AddListingScreen> {
                                   width: 16,
                                   height: 16,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white),
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
                               : const Icon(Icons.auto_awesome),
                           label: Text(
-                              _isParsing ? 'Extraction...' : 'Extraire les infos'),
+                            _isParsing ? 'Extraction...' : 'Extraire les infos',
+                          ),
                         ),
                       ),
                     ],
@@ -107,7 +182,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
               const SizedBox(height: DSpacing.md),
 
-              // Bouton saisie manuelle
+              // ── Bouton saisie manuelle ──
               if (!_showManual)
                 Center(
                   child: TextButton(
@@ -116,38 +191,52 @@ class _AddListingScreenState extends State<AddListingScreen> {
                   ),
                 ),
 
-              // Formulaire manuel (visible après parsing ou manuel)
+              // ── Formulaire manuel ──
               if (_showManual) ...[
-                Text('Informations du bien',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Informations du bien',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: DSpacing.md),
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(labelText: 'Titre *'),
+                  textCapitalization: TextCapitalization.sentences,
                   validator: (v) =>
-                      v == null || v.isEmpty ? 'Requis' : null,
+                      v == null || v.trim().isEmpty ? 'Requis' : null,
                 ),
                 const SizedBox(height: DSpacing.md),
-                Row(children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _priceController,
-                      decoration: const InputDecoration(
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _priceController,
+                        decoration: const InputDecoration(
                           labelText: 'Prix (€/mois ou €)',
-                          suffixText: '€'),
-                      keyboardType: TextInputType.number,
+                          suffixText: '€',
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: DSpacing.md),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _surfaceController,
-                      decoration: const InputDecoration(
-                          labelText: 'Surface', suffixText: 'm²'),
-                      keyboardType: TextInputType.number,
+                    const SizedBox(width: DSpacing.md),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _surfaceController,
+                        decoration: const InputDecoration(
+                          labelText: 'Surface',
+                          suffixText: 'm²',
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                      ),
                     ),
-                  ),
-                ]),
+                  ],
+                ),
                 const SizedBox(height: DSpacing.md),
                 TextFormField(
                   controller: _addressController,
@@ -155,13 +244,23 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     labelText: 'Adresse / Quartier',
                     prefixIcon: Icon(Icons.location_on_outlined),
                   ),
+                  textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: DSpacing.xl),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _save,
-                    child: const Text('Ajouter l\'annonce'),
+                    onPressed: _isSaving ? null : () => _save(),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Ajouter l\'annonce'),
                   ),
                 ),
               ],
@@ -170,11 +269,5 @@ class _AddListingScreenState extends State<AddListingScreen> {
         ),
       ),
     );
-  }
-
-  void _save() {
-    if (!_formKey.currentState!.validate()) return;
-    // TODO: Sauvegarder via le state management
-    Navigator.pop(context);
   }
 }
