@@ -1,50 +1,47 @@
 import 'package:flutter/material.dart';
-import '../../theme/doutang_theme.dart';
-import '../../theme/app_routes.dart';
-import '../../models/listing.dart';
-import '../../widgets/listing_card.dart';
-import '../../widgets/empty_state.dart';
 
-class ListingsScreen extends StatelessWidget {
+import '../../models/listing.dart';
+import '../../services/listing_storage_service.dart';
+import '../../theme/app_routes.dart';
+import '../../theme/doutang_theme.dart';
+import '../../widgets/empty_state.dart';
+import '../../widgets/listing_card.dart';
+
+class ListingsScreen extends StatefulWidget {
   const ListingsScreen({super.key});
 
-  // TODO: Remplacer par un provider/state management
-  List<Listing> get _mockListings => [
-        Listing(
-          id: 'mock-1',
-          title: 'Bel appart 2P lumineux — Paris 11',
-          price: 1350,
-          surface: 48,
-          rooms: 2,
-          address: 'Paris 11ème',
-          addedBy: 'Moi',
-          status: ListingStatus.aContacter,
-        ),
-        Listing(
-          id: 'mock-2',
-          title: 'Studio rénové avec balcon',
-          price: 980,
-          surface: 32,
-          rooms: 1,
-          address: 'Montreuil',
-          addedBy: 'Moi',
-          status: ListingStatus.visiteePlanifiee,
-        ),
-        Listing(
-          id: 'mock-3',
-          title: '3P calme cour intérieure',
-          price: 1650,
-          surface: 65,
-          rooms: 3,
-          address: 'Paris 12ème',
-          addedBy: 'Moi',
-          status: ListingStatus.visitee,
-        ),
-      ];
+  @override
+  State<ListingsScreen> createState() => _ListingsScreenState();
+}
+
+class _ListingsScreenState extends State<ListingsScreen> {
+  List<Listing> _listings = [];
+  ListingStatus? _filterStatus;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadListings();
+  }
+
+  Future<void> _loadListings() async {
+    final listings = await ListingStorageService.load();
+    if (mounted) {
+      setState(() {
+        _listings = listings;
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Listing> get _filtered => _filterStatus == null
+      ? _listings
+      : _listings.where((l) => l.status == _filterStatus).toList();
 
   @override
   Widget build(BuildContext context) {
-    final listings = _mockListings;
+    final listings = _filtered;
 
     return Scaffold(
       appBar: AppBar(
@@ -57,40 +54,45 @@ class ListingsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: listings.isEmpty
-          ? const EmptyState(
-              icon: Icons.home_outlined,
-              title: 'Aucune annonce',
-              subtitle:
-                  'Ajoute ta première annonce Jinka\nen tapant le + ci-dessous',
-            )
-          : Column(
-              children: [
-                _StatusFilterBar(),
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(DSpacing.md),
-                    itemCount: listings.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: DSpacing.sm),
-                    itemBuilder: (context, index) {
-                      return ListingCard(
-                        listing: listings[index],
-                        matchingScore: 0.85,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          AppRoutes.listingDetail,
-                          arguments: listings[index],
-                        ),
-                      );
-                    },
-                  ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : listings.isEmpty
+              ? const EmptyState(
+                  icon: Icons.home_outlined,
+                  title: 'Aucune annonce',
+                  subtitle:
+                      'Ajoute ta première annonce Jinka\nen tapant le + ci-dessous',
+                )
+              : Column(
+                  children: [
+                    _StatusFilterBar(
+                      selected: _filterStatus,
+                      onSelected: (s) => setState(() => _filterStatus = s),
+                    ),
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(DSpacing.md),
+                        itemCount: listings.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: DSpacing.sm),
+                        itemBuilder: (context, index) {
+                          return ListingCard(
+                            listing: listings[index],
+                            matchingScore: 0.85,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.listingDetail,
+                              arguments: listings[index],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () =>
-            Navigator.pushNamed(context, AppRoutes.addListing),
+        onPressed: () => Navigator.pushNamed(context, AppRoutes.addListing)
+            .then((_) => _loadListings()),
         backgroundColor: DoutangTheme.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
@@ -139,35 +141,39 @@ class ListingsScreen extends StatelessWidget {
   }
 }
 
-class _StatusFilterBar extends StatefulWidget {
-  @override
-  State<_StatusFilterBar> createState() => _StatusFilterBarState();
-}
+// ── Barre de filtre par statut ─────────────────────────────────────────────
 
-class _StatusFilterBarState extends State<_StatusFilterBar> {
-  ListingStatus? _selected;
+class _StatusFilterBar extends StatelessWidget {
+  final ListingStatus? selected;
+  final ValueChanged<ListingStatus?> onSelected;
+
+  const _StatusFilterBar({
+    required this.selected,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
-          horizontal: DSpacing.md, vertical: DSpacing.sm),
+        horizontal: DSpacing.md,
+        vertical: DSpacing.sm,
+      ),
       child: Row(
         children: [
           FilterChip(
             label: const Text('Toutes'),
-            selected: _selected == null,
-            onSelected: (_) => setState(() => _selected = null),
+            selected: selected == null,
+            onSelected: (_) => onSelected(null),
           ),
           const SizedBox(width: DSpacing.sm),
           ...ListingStatus.values.map((status) => Padding(
                 padding: const EdgeInsets.only(right: DSpacing.sm),
                 child: FilterChip(
                   label: Text(status.label),
-                  selected: _selected == status,
-                  onSelected: (_) =>
-                      setState(() => _selected = status),
+                  selected: selected == status,
+                  onSelected: (_) => onSelected(status),
                 ),
               )),
         ],

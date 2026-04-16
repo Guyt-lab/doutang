@@ -1,8 +1,11 @@
 // listing_detail_screen.dart
 import 'package:flutter/material.dart';
-import '../../theme/doutang_theme.dart';
-import '../../theme/app_routes.dart';
+
 import '../../models/listing.dart';
+import '../../models/profile.dart';
+import '../../services/profile_storage_service.dart';
+import '../../theme/app_routes.dart';
+import '../../theme/doutang_theme.dart';
 
 class ListingDetailScreen extends StatelessWidget {
   const ListingDetailScreen({super.key});
@@ -82,11 +85,21 @@ class ListingDetailScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.visitQuestionnaire,
-                  arguments: listing,
-                ),
+                onPressed: listing == null
+                    ? null
+                    : () async {
+                        final profile = await ProfileStorageService.load();
+                        if (!context.mounted) return;
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.visitQuestionnaire,
+                          arguments: {
+                            'listing': listing,
+                            'profile':
+                                profile ?? UserProfile(owner: 'Moi'),
+                          },
+                        );
+                      },
                 icon: const Icon(Icons.door_front_door_outlined),
                 label: const Text('Démarrer la visite'),
               ),

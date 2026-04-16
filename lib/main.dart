@@ -19,7 +19,7 @@ class DoutangApp extends StatelessWidget {
       title: 'Doutang',
       theme: DoutangTheme.light,
       debugShowCheckedModeBanner: false,
-      routes: AppRoutes.routes,
+      routes: Map.of(AppRoutes.routes)..remove(AppRoutes.listings),
       home: const MainScaffold(),
     );
   }

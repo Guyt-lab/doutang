@@ -60,7 +60,7 @@ class DoutangTheme {
           type: BottomNavigationBarType.fixed,
           elevation: 8,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: cardBg,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -112,13 +112,15 @@ class DoutangTheme {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
         chipTheme: ChipThemeData(
-          backgroundColor: surface,
-          selectedColor: primarySurface,
-          labelStyle: const TextStyle(fontSize: 13),
+          backgroundColor: DoutangTheme.surface,
+          selectedColor: DoutangTheme.primary,
+          labelStyle: const TextStyle(fontSize: 13, color: DoutangTheme.textPrimary),
+          secondaryLabelStyle: const TextStyle(fontSize: 13, color: Colors.white),
+          side: const BorderSide(color: DoutangTheme.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: border),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
         ),
         textTheme: const TextTheme(
           headlineLarge: TextStyle(
