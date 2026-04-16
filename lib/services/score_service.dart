@@ -1,13 +1,27 @@
-import '../models/visit.dart';
-import '../models/profile.dart';
+import '../models/enums.dart';
 import '../models/listing.dart';
+import '../models/listing_facts.dart';
+import '../models/profile.dart';
+import '../models/question_template.dart';
+import '../models/visit.dart';
 
 class ScoreService {
-  /// Calcule le score d'une visite individuelle basé sur les pondérations du profil.
-  /// Retourne une valeur entre 0.0 et 5.0
-  static double calculateVisitScore(Visit visit, UserProfile profile) {
+  /// Calcule le score d'évaluation d'une visite (pondérations profil).
+  ///
+  /// [config] — si fourni, seules les questions dont l'id est dans
+  /// [QuestionnaireConfig.enabledQuestionIds] contribuent au score.
+  /// Si [enabledQuestionIds] est vide, toutes les réponses contribuent
+  /// (comportement v1 inchangé).
+  ///
+  /// Retourne une valeur entre 0.0 et 5.0.
+  static double calculateVisitScore(
+    Visit visit,
+    UserProfile profile, {
+    QuestionnaireConfig? config,
+  }) {
     final answers = visit.answers.ratedAnswers;
     final weights = profile.weights;
+    final enabled = config?.enabledQuestionIds ?? {};
 
     double weightedSum = 0;
     double totalWeight = 0;
@@ -18,7 +32,12 @@ class ScoreService {
 
       if (value == null) continue;
 
-      final weight = (weights[key] ?? weights[_mapAnswerKeyToWeight(key)] ?? 3).toDouble();
+      // Si une liste d'ids activés est définie, filtrer par clé de question.
+      // La convention id = 'q_<key>' (ex: q_luminosite, q_calme…).
+      if (enabled.isNotEmpty && !enabled.contains('q_$key')) continue;
+
+      final weight =
+          (weights[key] ?? weights[_mapAnswerKeyToWeight(key)] ?? 3).toDouble();
       weightedSum += value * weight;
       totalWeight += weight;
     }
@@ -45,35 +64,141 @@ class ScoreService {
   }
 
   /// Calcule le score de matching d'une annonce vs le profil AVANT visite.
-  /// Retourne un pourcentage entre 0.0 et 1.0
-  static double calculateMatchingScore(Listing listing, UserProfile profile) {
+  ///
+  /// Utilise en priorité les champs [ListingFacts] (plus riches) puis les
+  /// champs directs du [Listing] en fallback.
+  ///
+  /// Retourne un pourcentage entre 0.0 et 1.0.
+  static double calculateMatchingScore(
+    Listing listing,
+    UserProfile profile, {
+    ListingFacts? facts,
+  }) {
     final criteria = profile.criteria;
+    final f = facts ?? listing.facts;
     double score = 0;
     int checks = 0;
 
-    // Budget
-    if (criteria.budgetMax != null && listing.price != null) {
+    // ── Budget ────────────────────────────────────────────────────────────
+    final price = listing.price;
+    if (criteria.budgetMax != null && price != null) {
       checks++;
-      if (listing.price! <= criteria.budgetMax!) score++;
-      else if (listing.price! <= criteria.budgetMax! * 1.1) score += 0.5;
+      if (price <= criteria.budgetMax!) {
+        score++;
+      } else if (price <= criteria.budgetMax! * 1.1) {
+        score += 0.5;
+      }
     }
 
-    // Surface
-    if (criteria.surfaceMin != null && listing.surface != null) {
+    // ── Surface ───────────────────────────────────────────────────────────
+    final surface = f.surfaceTotal ?? listing.surface;
+    if (criteria.surfaceMin != null && surface != null) {
       checks++;
-      if (listing.surface! >= criteria.surfaceMin!) score++;
-      else if (listing.surface! >= criteria.surfaceMin! * 0.9) score += 0.5;
+      if (surface >= criteria.surfaceMin!) {
+        score++;
+      } else if (surface >= criteria.surfaceMin! * 0.9) {
+        score += 0.5;
+      }
     }
 
-    // Pièces
-    if (criteria.roomsMin != null && listing.rooms != null) {
+    // ── Pièces ────────────────────────────────────────────────────────────
+    final rooms = f.rooms ?? listing.rooms;
+    if (criteria.roomsMin != null && rooms != null) {
       checks++;
-      if (listing.rooms! >= criteria.roomsMin!) score++;
+      if (rooms >= criteria.roomsMin!) score++;
+    }
+
+    // ── DPE (si les faits sont disponibles) ───────────────────────────────
+    // Pour un projet achat, un DPE F ou G est pénalisant.
+    if (f.dpe != null && criteria.projectType == 'achat') {
+      checks++;
+      const badDpe = {'F', 'G'};
+      if (!badDpe.contains(f.dpe!.toUpperCase())) score++;
     }
 
     if (checks == 0) return 0.5; // Pas assez d'infos — score neutre
 
     return double.parse((score / checks).toStringAsFixed(2));
+  }
+
+  /// Détecte les bloqueurs d'une visite selon la configuration du profil.
+  ///
+  /// Un bloqueur signifie que le bien est éliminatoire sur ce critère.
+  static List<Blocker> detectBlockers(
+    Visit visit,
+    UserProfile profile,
+  ) {
+    final answers = visit.answers;
+    final config = profile.questionnaireConfig;
+    final blockers = <Blocker>[];
+
+    // ── Transport ─────────────────────────────────────────────────────────
+    final minutes = answers.transportMinutes;
+    if (minutes != null && minutes > config.transportMaxMinutes) {
+      blockers.add(Blocker(
+        type: BlockerType.transport,
+        message: '${minutes} min (max ${config.transportMaxMinutes} min)',
+      ));
+    }
+
+    // ── Humidité ──────────────────────────────────────────────────────────
+    if (config.humidityBlocker && answers.humidityDetected == true) {
+      blockers.add(const Blocker(
+        type: BlockerType.humidity,
+        message: 'Humidité détectée',
+      ));
+    }
+
+    // ── Acoustique ────────────────────────────────────────────────────────
+    final phonics = answers.phonicsScore;
+    if (phonics != null && phonics <= config.phonicsBlockerThreshold) {
+      blockers.add(Blocker(
+        type: BlockerType.phonics,
+        message: 'Score acoustique : $phonics/5',
+      ));
+    }
+
+    return blockers;
+  }
+
+  /// Calcule le score final d'un bien (0–100).
+  ///
+  /// Combine trois composantes selon [QuestionnaireConfig.scoreWeights] :
+  /// - `eval`     : score d'évaluation de visite, normalisé sur 100  (0 si pas de visite)
+  /// - `matching` : score de matching annonce ↔ profil, normalisé sur 100
+  /// - `feeling`  : ressenti global de la visite (1–5), normalisé sur 100 (0 si pas de visite)
+  ///
+  /// Si [visit] est null, seule la composante `matching` contribue (pondérée 1.0).
+  static double calculateFinalScore(
+    Visit? visit,
+    ListingFacts facts,
+    UserProfile profile,
+    Listing listing,
+  ) {
+    final config = profile.questionnaireConfig;
+    final weights = config.scoreWeights;
+
+    final matchingRaw = calculateMatchingScore(listing, profile, facts: facts);
+    final matchingScore = matchingRaw * 100;
+
+    if (visit == null) {
+      return double.parse(matchingScore.toStringAsFixed(1));
+    }
+
+    final evalRaw = calculateVisitScore(visit, profile, config: config);
+    final evalScore = (evalRaw / 5.0) * 100;
+
+    final feelingRaw = visit.feeling.clamp(1, 5);
+    final feelingScore = ((feelingRaw - 1) / 4.0) * 100;
+
+    final wEval = weights['eval'] ?? 0.5;
+    final wMatching = weights['matching'] ?? 0.3;
+    final wFeeling = weights['feeling'] ?? 0.2;
+
+    final total =
+        wEval * evalScore + wMatching * matchingScore + wFeeling * feelingScore;
+
+    return double.parse(total.toStringAsFixed(1));
   }
 
   /// Retourne un libellé pour un score donné

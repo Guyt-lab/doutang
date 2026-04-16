@@ -1,6 +1,7 @@
-import '../models/project.dart';
+import '../models/listing_facts.dart';
 import '../models/profile.dart';
 import '../models/listing.dart';
+import '../models/project.dart';
 import '../models/visit.dart';
 
 /// Service de fusion de deux projets Doutang.
@@ -63,10 +64,16 @@ class MergeService {
         // Nouvelle annonce — on l'ajoute
         merged[listing.id] = listing;
       } else {
-        // Annonce existante — on garde la plus récente
-        if (listing.updatedAt.isAfter(existing.updatedAt)) {
-          merged[listing.id] = listing;
-        }
+        // Annonce existante — la plus récente gagne, mais on fusionne les facts
+        // champ par champ pour ne pas perdre d'informations.
+        final Listing winner =
+            listing.updatedAt.isAfter(existing.updatedAt) ? listing : existing;
+        final Listing loser =
+            listing.updatedAt.isAfter(existing.updatedAt) ? existing : listing;
+        // Fusionne les faits champ par champ : winner en priorité, loser
+        // comble les champs null que winner ne connaît pas encore.
+        final ListingFacts mergedFacts = winner.facts.complement(loser.facts);
+        merged[listing.id] = winner.copyWith(facts: mergedFacts);
       }
     }
 

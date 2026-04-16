@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import 'question_template.dart';
+
 const _uuid = Uuid();
 
 class UserProfile {
@@ -7,6 +9,7 @@ class UserProfile {
   final String owner;
   final SearchCriteria criteria;
   final Map<String, int> weights;
+  final QuestionnaireConfig questionnaireConfig;
   final DateTime updatedAt;
 
   UserProfile({
@@ -14,10 +17,13 @@ class UserProfile {
     required this.owner,
     SearchCriteria? criteria,
     Map<String, int>? weights,
+    QuestionnaireConfig? questionnaireConfig,
     DateTime? updatedAt,
   })  : id = id ?? _uuid.v4(),
         criteria = criteria ?? SearchCriteria(),
         weights = weights ?? defaultWeights(),
+        questionnaireConfig =
+            questionnaireConfig ?? QuestionnaireConfig.defaults,
         updatedAt = updatedAt ?? DateTime.now();
 
   static Map<String, int> defaultWeights() => {
@@ -35,12 +41,14 @@ class UserProfile {
     String? owner,
     SearchCriteria? criteria,
     Map<String, int>? weights,
+    QuestionnaireConfig? questionnaireConfig,
   }) {
     return UserProfile(
       id: id,
       owner: owner ?? this.owner,
       criteria: criteria ?? this.criteria,
       weights: weights ?? this.weights,
+      questionnaireConfig: questionnaireConfig ?? this.questionnaireConfig,
       updatedAt: DateTime.now(),
     );
   }
@@ -50,6 +58,7 @@ class UserProfile {
         'owner': owner,
         'criteria': criteria.toJson(),
         'weights': weights,
+        'questionnaire_config': questionnaireConfig.toJson(),
         'updated_at': updatedAt.toIso8601String(),
       };
 
@@ -62,6 +71,10 @@ class UserProfile {
             (json['weights'] as Map<String, dynamic>).map(
           (k, v) => MapEntry(k, (v as num).toInt()),
         )),
+        questionnaireConfig: json['questionnaire_config'] != null
+            ? QuestionnaireConfig.fromJson(
+                json['questionnaire_config'] as Map<String, dynamic>)
+            : QuestionnaireConfig.defaults,
         updatedAt: DateTime.parse(json['updated_at'] as String),
       );
 }
@@ -70,6 +83,7 @@ class SearchCriteria {
   final double? budgetMax;
   final double? surfaceMin;
   final int? roomsMin;
+
   /// 'location' ou 'achat'
   final String? projectType;
   final List<String> zones;

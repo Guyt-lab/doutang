@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import 'listing_facts.dart';
+
 const _uuid = Uuid();
 
 class Listing {
@@ -16,6 +18,9 @@ class Listing {
   final DateTime addedAt;
   final DateTime updatedAt;
 
+  /// Caractéristiques factuelles du bien (owner-agnostic, remplies progressivement).
+  final ListingFacts facts;
+
   Listing({
     String? id,
     this.url,
@@ -29,11 +34,13 @@ class Listing {
     required this.addedBy,
     DateTime? addedAt,
     DateTime? updatedAt,
+    ListingFacts? facts,
   })  : id = id ?? _uuid.v4(),
         status = status ?? ListingStatus.aContacter,
         notes = notes ?? '',
         addedAt = addedAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+        updatedAt = updatedAt ?? DateTime.now(),
+        facts = facts ?? const ListingFacts();
 
   Listing copyWith({
     String? url,
@@ -44,6 +51,7 @@ class Listing {
     String? address,
     ListingStatus? status,
     String? notes,
+    ListingFacts? facts,
   }) {
     return Listing(
       id: id,
@@ -58,6 +66,7 @@ class Listing {
       addedBy: addedBy,
       addedAt: addedAt,
       updatedAt: DateTime.now(),
+      facts: facts ?? this.facts,
     );
   }
 
@@ -74,6 +83,7 @@ class Listing {
         'added_by': addedBy,
         'added_at': addedAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
+        'facts': facts.toJson(),
       };
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
@@ -92,6 +102,9 @@ class Listing {
         addedBy: json['added_by'] as String,
         addedAt: DateTime.parse(json['added_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
+        facts: json['facts'] != null
+            ? ListingFacts.fromJson(json['facts'] as Map<String, dynamic>)
+            : const ListingFacts(),
       );
 }
 

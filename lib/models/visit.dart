@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import 'renovation_answers.dart';
+
 const _uuid = Uuid();
 
 class Visit {
@@ -76,8 +78,13 @@ class Visit {
       );
 }
 
+/// Réponses complètes d'une visite.
+///
+/// Compatibilité ascendante garantie : tous les nouveaux champs sont nullable
+/// et absents des fichiers v1 → désérialisés comme null sans erreur.
 class VisitAnswers {
-  // Critères notés de 1 à 5
+  // ── Champs v1 (conservés à l'identique) ──────────────────────────────────
+
   final int? luminosite;
   final int? calme;
   final int? etatGeneral;
@@ -87,7 +94,6 @@ class VisitAnswers {
   final int? chauffage;
   final int? quartier;
 
-  // Critères booléens
   final bool? doubleVitrage;
   final bool? gardien;
   final bool? cave;
@@ -95,11 +101,84 @@ class VisitAnswers {
   final bool? ascenseur;
   final bool? digicode;
 
-  // Texte libre
   final String? coupDeCoeur;
   final String? pointRedhibitoire;
 
+  // ── Champs v2 : Transports & Quartier ────────────────────────────────────
+
+  /// Note 1-5 : satisfaction globale du trajet.
+  final int? transportScore;
+
+  /// Durée réelle de trajet en minutes (utilisée pour le bloqueur transport).
+  final int? transportMinutes;
+
+  /// Description des moyens de transport utilisés.
+  final String? transportType;
+
+  /// Services de mobilité disponibles (vélos, trottinettes…).
+  final String? mobilityService;
+
+  final int? noiseScore;
+  final int? neighborhoodScore;
+  final int? safetyScore;
+  final int? greenScore;
+
+  // ── Champs v2 : Immeuble ─────────────────────────────────────────────────
+
+  final int? commonAreasScore;
+  final bool? elevatorOk;
+  final bool? caveOk;
+  final bool? secureDoorOk;
+  final bool? bikeStorage;
+
+  // ── Champs v2 : Luminosité & Vue ─────────────────────────────────────────
+
+  /// Note 1-5 luminosité (champ v2, complète `luminosite`).
+  final int? luminosityScore;
+
+  /// Heure de la visite au format "HH:mm".
+  final String? visitTime;
+  final int? visAVisScore;
+
+  // ── Champs v2 : Acoustique & Isolation ───────────────────────────────────
+
+  /// Note 1-5 isolation phonique globale (utilisé pour le bloqueur phonics).
+  final int? phonicsScore;
+  final bool? humidityDetected;
+  final int? heatingDistributionScore;
+  final int? thermalInsulationScore;
+
+  // ── Champs v2 : Équipements techniques ───────────────────────────────────
+
+  final bool? towelRadiatorSdb;
+  final int? lightingScore;
+  final bool? waterPressureOk;
+  final int? waterQualityScore;
+  final bool? electricPanelOk;
+  final bool? earthGroundOk;
+  final int? outletsScore;
+  final bool? mobileSignalOk;
+  final bool? vmcOk;
+
+  // ── Champs v2 : Cuisine ──────────────────────────────────────────────────
+
+  final int? kitchenWorktopScore;
+  final bool? fridgeSpaceOk;
+  final bool? hoodOk;
+  final bool? washingMachineSpace;
+
+  // ── Champs v2 : Aspects pratiques & admin ────────────────────────────────
+
+  final String? departureReason;
+  final DateTime? availabilityDate;
+  final double? agencyFees;
+  final double? guaranteeDeposit;
+  final double? landTax;
+  final RenovationAnswers? renovation;
+  final bool? liveIn2Years;
+
   VisitAnswers({
+    // v1
     this.luminosite,
     this.calme,
     this.etatGeneral,
@@ -116,8 +195,50 @@ class VisitAnswers {
     this.digicode,
     this.coupDeCoeur,
     this.pointRedhibitoire,
+    // v2
+    this.transportScore,
+    this.transportMinutes,
+    this.transportType,
+    this.mobilityService,
+    this.noiseScore,
+    this.neighborhoodScore,
+    this.safetyScore,
+    this.greenScore,
+    this.commonAreasScore,
+    this.elevatorOk,
+    this.caveOk,
+    this.secureDoorOk,
+    this.bikeStorage,
+    this.luminosityScore,
+    this.visitTime,
+    this.visAVisScore,
+    this.phonicsScore,
+    this.humidityDetected,
+    this.heatingDistributionScore,
+    this.thermalInsulationScore,
+    this.towelRadiatorSdb,
+    this.lightingScore,
+    this.waterPressureOk,
+    this.waterQualityScore,
+    this.electricPanelOk,
+    this.earthGroundOk,
+    this.outletsScore,
+    this.mobileSignalOk,
+    this.vmcOk,
+    this.kitchenWorktopScore,
+    this.fridgeSpaceOk,
+    this.hoodOk,
+    this.washingMachineSpace,
+    this.departureReason,
+    this.availabilityDate,
+    this.agencyFees,
+    this.guaranteeDeposit,
+    this.landTax,
+    this.renovation,
+    this.liveIn2Years,
   });
 
+  /// Champs notés 1-5 utilisés pour le calcul du score v1 (rétrocompat).
   Map<String, int?> get ratedAnswers => {
         'luminosite': luminosite,
         'calme': calme,
@@ -130,6 +251,7 @@ class VisitAnswers {
       };
 
   Map<String, dynamic> toJson() => {
+        // v1
         'luminosite': luminosite,
         'calme': calme,
         'etat_general': etatGeneral,
@@ -146,9 +268,51 @@ class VisitAnswers {
         'digicode': digicode,
         'coup_de_coeur': coupDeCoeur,
         'point_redhibitoire': pointRedhibitoire,
+        // v2
+        'transport_score': transportScore,
+        'transport_minutes': transportMinutes,
+        'transport_type': transportType,
+        'mobility_service': mobilityService,
+        'noise_score': noiseScore,
+        'neighborhood_score': neighborhoodScore,
+        'safety_score': safetyScore,
+        'green_score': greenScore,
+        'common_areas_score': commonAreasScore,
+        'elevator_ok': elevatorOk,
+        'cave_ok': caveOk,
+        'secure_door_ok': secureDoorOk,
+        'bike_storage': bikeStorage,
+        'luminosity_score': luminosityScore,
+        'visit_time': visitTime,
+        'vis_a_vis_score': visAVisScore,
+        'phonics_score': phonicsScore,
+        'humidity_detected': humidityDetected,
+        'heating_distribution_score': heatingDistributionScore,
+        'thermal_insulation_score': thermalInsulationScore,
+        'towel_radiator_sdb': towelRadiatorSdb,
+        'lighting_score': lightingScore,
+        'water_pressure_ok': waterPressureOk,
+        'water_quality_score': waterQualityScore,
+        'electric_panel_ok': electricPanelOk,
+        'earth_ground_ok': earthGroundOk,
+        'outlets_score': outletsScore,
+        'mobile_signal_ok': mobileSignalOk,
+        'vmc_ok': vmcOk,
+        'kitchen_worktop_score': kitchenWorktopScore,
+        'fridge_space_ok': fridgeSpaceOk,
+        'hood_ok': hoodOk,
+        'washing_machine_space': washingMachineSpace,
+        'departure_reason': departureReason,
+        'availability_date': availabilityDate?.toIso8601String(),
+        'agency_fees': agencyFees,
+        'guarantee_deposit': guaranteeDeposit,
+        'land_tax': landTax,
+        'renovation': renovation?.toJson(),
+        'live_in_2_years': liveIn2Years,
       };
 
   factory VisitAnswers.fromJson(Map<String, dynamic> json) => VisitAnswers(
+        // v1
         luminosite: (json['luminosite'] as num?)?.toInt(),
         calme: (json['calme'] as num?)?.toInt(),
         etatGeneral: (json['etat_general'] as num?)?.toInt(),
@@ -165,5 +329,53 @@ class VisitAnswers {
         digicode: json['digicode'] as bool?,
         coupDeCoeur: json['coup_de_coeur'] as String?,
         pointRedhibitoire: json['point_redhibitoire'] as String?,
+        // v2
+        transportScore: (json['transport_score'] as num?)?.toInt(),
+        transportMinutes: (json['transport_minutes'] as num?)?.toInt(),
+        transportType: json['transport_type'] as String?,
+        mobilityService: json['mobility_service'] as String?,
+        noiseScore: (json['noise_score'] as num?)?.toInt(),
+        neighborhoodScore: (json['neighborhood_score'] as num?)?.toInt(),
+        safetyScore: (json['safety_score'] as num?)?.toInt(),
+        greenScore: (json['green_score'] as num?)?.toInt(),
+        commonAreasScore: (json['common_areas_score'] as num?)?.toInt(),
+        elevatorOk: json['elevator_ok'] as bool?,
+        caveOk: json['cave_ok'] as bool?,
+        secureDoorOk: json['secure_door_ok'] as bool?,
+        bikeStorage: json['bike_storage'] as bool?,
+        luminosityScore: (json['luminosity_score'] as num?)?.toInt(),
+        visitTime: json['visit_time'] as String?,
+        visAVisScore: (json['vis_a_vis_score'] as num?)?.toInt(),
+        phonicsScore: (json['phonics_score'] as num?)?.toInt(),
+        humidityDetected: json['humidity_detected'] as bool?,
+        heatingDistributionScore:
+            (json['heating_distribution_score'] as num?)?.toInt(),
+        thermalInsulationScore:
+            (json['thermal_insulation_score'] as num?)?.toInt(),
+        towelRadiatorSdb: json['towel_radiator_sdb'] as bool?,
+        lightingScore: (json['lighting_score'] as num?)?.toInt(),
+        waterPressureOk: json['water_pressure_ok'] as bool?,
+        waterQualityScore: (json['water_quality_score'] as num?)?.toInt(),
+        electricPanelOk: json['electric_panel_ok'] as bool?,
+        earthGroundOk: json['earth_ground_ok'] as bool?,
+        outletsScore: (json['outlets_score'] as num?)?.toInt(),
+        mobileSignalOk: json['mobile_signal_ok'] as bool?,
+        vmcOk: json['vmc_ok'] as bool?,
+        kitchenWorktopScore: (json['kitchen_worktop_score'] as num?)?.toInt(),
+        fridgeSpaceOk: json['fridge_space_ok'] as bool?,
+        hoodOk: json['hood_ok'] as bool?,
+        washingMachineSpace: json['washing_machine_space'] as bool?,
+        departureReason: json['departure_reason'] as String?,
+        availabilityDate: json['availability_date'] != null
+            ? DateTime.tryParse(json['availability_date'] as String)
+            : null,
+        agencyFees: (json['agency_fees'] as num?)?.toDouble(),
+        guaranteeDeposit: (json['guarantee_deposit'] as num?)?.toDouble(),
+        landTax: (json['land_tax'] as num?)?.toDouble(),
+        renovation: json['renovation'] != null
+            ? RenovationAnswers.fromJson(
+                json['renovation'] as Map<String, dynamic>)
+            : null,
+        liveIn2Years: json['live_in_2_years'] as bool?,
       );
 }
