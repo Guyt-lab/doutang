@@ -101,10 +101,23 @@ class _QuestionCardState extends State<QuestionCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(q.text, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              q.text,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: DoutangTheme.textPrimary,
+              ),
+            ),
             if (q.hint != null) ...[
               const SizedBox(height: DSpacing.xs),
-              Text(q.hint!, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                q.hint!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: DoutangTheme.textSecondary,
+                ),
+              ),
             ],
             const SizedBox(height: DSpacing.sm + 2),
             _buildInput(),
@@ -138,7 +151,7 @@ class _QuestionCardState extends State<QuestionCard> {
             child: Icon(
               filled ? Icons.star_rounded : Icons.star_outline_rounded,
               size: 34,
-              color: filled ? DoutangTheme.accent : DoutangTheme.textHint,
+              color: filled ? DoutangTheme.accent : DoutangTheme.border,
             ),
           ),
         );
@@ -180,15 +193,23 @@ class _QuestionCardState extends State<QuestionCard> {
 
     if (isSelected) {
       if (target == true) {
+        // Oui sélectionné : vert foncé sur fond vert clair
         borderColor = DoutangTheme.primary;
         bgColor = DoutangTheme.primarySurface;
         textColor = DoutangTheme.primary;
       } else {
+        // Non sélectionné : rouge foncé sur fond rouge clair
         borderColor = DoutangTheme.danger;
         bgColor = const Color(0xFFFFEBEB);
         textColor = DoutangTheme.danger;
       }
+    } else if (isSkip) {
+      // ? : gris foncé sur fond gris clair, toujours
+      borderColor = const Color(0xFFCED4DA);
+      bgColor = const Color(0xFFE9ECEF);
+      textColor = DoutangTheme.textSecondary;
     } else {
+      // Oui / Non non sélectionnés : gris foncé sur fond blanc légèrement grisé
       borderColor = DoutangTheme.border;
       bgColor = DoutangTheme.surface;
       textColor = DoutangTheme.textSecondary;
