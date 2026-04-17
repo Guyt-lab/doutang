@@ -11,7 +11,7 @@ import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
 
-class VisitDetailScreen extends StatelessWidget {
+class VisitDetailScreen extends StatefulWidget {
   final Visit visit;
   final Listing listing;
 
@@ -20,6 +20,28 @@ class VisitDetailScreen extends StatelessWidget {
     required this.visit,
     required this.listing,
   });
+
+  @override
+  State<VisitDetailScreen> createState() => _VisitDetailScreenState();
+}
+
+class _VisitDetailScreenState extends State<VisitDetailScreen> {
+  late Visit _currentVisit;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentVisit = widget.visit;
+  }
+
+  Future<void> _reload() async {
+    final visits = await VisitStorageService.load();
+    final updated = visits.firstWhere(
+      (v) => v.listingId == widget.listing.id && v.owner == _currentVisit.owner,
+      orElse: () => _currentVisit,
+    );
+    if (mounted) setState(() => _currentVisit = updated);
+  }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -80,7 +102,7 @@ class VisitDetailScreen extends StatelessWidget {
 
   /// Construit une map questionId → valeur de réponse pour l'affichage.
   Map<String, dynamic> _buildAnswerMap() {
-    final a = visit.answers;
+    final a = _currentVisit.answers;
     final m = <String, dynamic>{};
 
     void put(String key, dynamic val) {
@@ -100,7 +122,9 @@ class VisitDetailScreen extends StatelessWidget {
     put(kQSafetyFeeling, a.safetyScore);
     put(kQGreenSpaces, a.greenScore);
     // s2 — Immeuble
+    put(kQCommonAreas, a.commonAreasScore);
     put(kQBuildingCondition, a.commonAreasScore);
+    put(kQElevatorOk, a.elevatorOk ?? a.ascenseur);
     put(kQElevatorPresent, a.elevatorOk ?? a.ascenseur);
     put(kQCave, a.caveOk ?? a.cave);
     put(kQBikeStorage, a.bikeStorage);
@@ -147,12 +171,24 @@ class VisitDetailScreen extends StatelessWidget {
   Map<String, List<({String text, dynamic value})>> _buildSectionedAnswers() {
     final answerMap = _buildAnswerMap();
     final result = <String, List<({String text, dynamic value})>>{};
+    final consumed = <String>{};
+
+    // Pass 1: match known questions in order
     for (final q in kDefaultQuestions) {
       final val = answerMap[q.id];
       if (val != null) {
         result.putIfAbsent(q.section, () => []).add((text: q.text, value: val));
+        consumed.add(q.id);
       }
     }
+
+    // Pass 2: unmatched answers fall back to 's8'
+    for (final entry in answerMap.entries) {
+      if (!consumed.contains(entry.key)) {
+        result.putIfAbsent('s8', () => []).add((text: entry.key, value: entry.value));
+      }
+    }
+
     return result;
   }
 
@@ -161,8 +197,8 @@ class VisitDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sectionedAnswers = _buildSectionedAnswers();
-    final color = _scoreColor(visit.score);
-    final renovation = visit.answers.renovation;
+    final color = _scoreColor(_currentVisit.score);
+    final renovation = _currentVisit.answers.renovation;
 
     return Scaffold(
       appBar: AppBar(
@@ -170,13 +206,13 @@ class VisitDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              listing.title,
+              widget.listing.title,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              _formatDateFull(visit.visitedAt),
+              _formatDateFull(_currentVisit.visitedAt),
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -238,7 +274,7 @@ class VisitDetailScreen extends StatelessWidget {
 
   Widget _buildSummaryCard(BuildContext context, Color color) {
     final (emoji, feelingLabel) =
-        _feelingMap[visit.feeling] ?? _feelingMap[3]!;
+        _feelingMap[_currentVisit.feeling] ?? _feelingMap[3]!;
 
     return Container(
       padding: const EdgeInsets.all(DSpacing.md),
@@ -255,7 +291,7 @@ class VisitDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${visit.score.round()}',
+                '${_currentVisit.score.round()}',
                 style: TextStyle(
                   fontSize: 56,
                   fontWeight: FontWeight.w800,
@@ -277,7 +313,7 @@ class VisitDetailScreen extends StatelessWidget {
             ],
           ),
           Text(
-            _scoreLabel(visit.score),
+            _scoreLabel(_currentVisit.score),
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -313,23 +349,23 @@ class VisitDetailScreen extends StatelessWidget {
             ),
           ),
           // Coup de cœur
-          if (visit.answers.coupDeCoeur?.isNotEmpty == true) ...[
+          if (_currentVisit.answers.coupDeCoeur?.isNotEmpty == true) ...[
             const SizedBox(height: DSpacing.sm),
             _NoteRow(
               icon: Icons.favorite_outline,
               color: DoutangTheme.primary,
               label: 'Coup de cœur',
-              text: visit.answers.coupDeCoeur!,
+              text: _currentVisit.answers.coupDeCoeur!,
             ),
           ],
           // Point rédhibitoire
-          if (visit.answers.pointRedhibitoire?.isNotEmpty == true) ...[
+          if (_currentVisit.answers.pointRedhibitoire?.isNotEmpty == true) ...[
             const SizedBox(height: DSpacing.sm),
             _NoteRow(
               icon: Icons.warning_amber_outlined,
               color: DoutangTheme.danger,
               label: 'Point rédhibitoire',
-              text: visit.answers.pointRedhibitoire!,
+              text: _currentVisit.answers.pointRedhibitoire!,
             ),
           ],
         ],
@@ -374,12 +410,12 @@ class VisitDetailScreen extends StatelessWidget {
       context,
       AppRoutes.visitQuestionnaire,
       arguments: {
-        'listing': listing,
+        'listing': widget.listing,
         'profile': profile ?? UserProfile(owner: 'Moi'),
-        'existingVisit': visit,
+        'existingVisit': _currentVisit,
       },
     );
-    if (context.mounted) Navigator.pop(context);
+    await _reload();
   }
 
   Future<void> _onDelete(BuildContext context) async {
@@ -405,7 +441,7 @@ class VisitDetailScreen extends StatelessWidget {
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    await VisitStorageService.delete(visit.id);
+    await VisitStorageService.delete(_currentVisit.id);
     if (context.mounted) {
       Navigator.popUntil(context, ModalRoute.withName(AppRoutes.visits));
     }

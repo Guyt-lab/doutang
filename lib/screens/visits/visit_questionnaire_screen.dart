@@ -8,6 +8,7 @@ import '../../models/question_template.dart';
 import '../../models/renovation_answers.dart';
 import '../../models/visit.dart';
 import '../../services/score_service.dart';
+import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
 import '../../widgets/question_card.dart';
@@ -134,7 +135,9 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     put(kQSafetyFeeling, a.safetyScore);
     put(kQGreenSpaces, a.greenScore);
     // s2
+    put(kQCommonAreas, a.commonAreasScore);
     put(kQBuildingCondition, a.commonAreasScore);
+    put(kQElevatorOk, a.elevatorOk ?? a.ascenseur);
     put(kQElevatorPresent, a.elevatorOk ?? a.ascenseur);
     put(kQCave, a.caveOk ?? a.cave);
     put(kQBikeStorage, a.bikeStorage);
@@ -146,6 +149,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     put(kQDoubleGlazing, a.doubleVitrage);
     // s4
     put(kQPhonicsFloors, a.phonicsScore);
+    put(kQPhonicsNeighbors, a.phonicsScore);
+    put(kQPhonicsStreet, a.phonicsScore);
     put(kQHumidityDetected, a.humidityDetected);
     put(kQHeatingDistribution, a.heatingDistributionScore ?? a.chauffage);
     put(kQThermalInsulation, a.thermalInsulationScore);
@@ -324,6 +329,7 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
         owner: widget.profile.owner,
         answers: answers,
         feeling: _feeling,
+        visitedAt: widget.existingVisit?.visitedAt,
       );
 
       final score = ScoreService.calculateFinalScore(
@@ -333,19 +339,24 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
         widget.listing,
       );
       final visitWithScore = visit.copyWith(score: score);
-      final blockers = ScoreService.detectBlockers(visitWithScore, widget.profile);
 
       if (!mounted) return;
 
-      await Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.visitSummary,
-        arguments: {
-          'visit': visitWithScore,
-          'listing': widget.listing,
-          'blockers': blockers,
-        },
-      );
+      if (widget.existingVisit != null) {
+        await VisitStorageService.add(visitWithScore);
+        if (mounted) Navigator.pop(context);
+      } else {
+        final blockers = ScoreService.detectBlockers(visitWithScore, widget.profile);
+        await Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.visitSummary,
+          arguments: {
+            'visit': visitWithScore,
+            'listing': widget.listing,
+            'blockers': blockers,
+          },
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
