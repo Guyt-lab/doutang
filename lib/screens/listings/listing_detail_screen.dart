@@ -1,18 +1,54 @@
-// listing_detail_screen.dart
 import 'package:flutter/material.dart';
 
 import '../../models/listing.dart';
 import '../../models/profile.dart';
+import '../../models/visit.dart';
 import '../../services/profile_storage_service.dart';
+import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
 
-class ListingDetailScreen extends StatelessWidget {
+class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ListingDetailScreen> createState() => _ListingDetailScreenState();
+}
+
+class _ListingDetailScreenState extends State<ListingDetailScreen> {
+  Listing? _listing;
+  Visit? _existingVisit;
+  bool _isLoading = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final listing = ModalRoute.of(context)?.settings.arguments as Listing?;
+    if (_listing == null && listing != null) {
+      _listing = listing;
+      _loadVisit();
+    }
+  }
+
+  Future<void> _loadVisit() async {
+    if (_listing == null) return;
+    final profile = await ProfileStorageService.load();
+    final owner = profile?.owner ?? 'Moi';
+    final visits = await VisitStorageService.load();
+    final found = visits.where(
+      (v) => v.listingId == _listing!.id && v.owner == owner,
+    );
+    if (mounted) {
+      setState(() {
+        _existingVisit = found.isNotEmpty ? found.first : null;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final listing = _listing;
 
     return Scaffold(
       appBar: AppBar(
@@ -79,7 +115,6 @@ class ListingDetailScreen extends StatelessWidget {
                     Text('Score matching',
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: DSpacing.sm),
-                    // TODO: ScoreBar widget
                     const LinearProgressIndicator(value: 0.85),
                     const SizedBox(height: DSpacing.sm),
                     Text('85% de tes critères couverts',
@@ -90,32 +125,75 @@ class ListingDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: DSpacing.lg),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: listing == null
-                    ? null
-                    : () async {
-                        final profile = await ProfileStorageService.load();
-                        if (!context.mounted) return;
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.visitQuestionnaire,
-                          arguments: {
-                            'listing': listing,
-                            'profile':
-                                profile ?? UserProfile(owner: 'Moi'),
-                          },
-                        );
-                      },
-                icon: const Icon(Icons.door_front_door_outlined),
-                label: const Text('Démarrer la visite'),
-              ),
-            ),
+            // Boutons visite
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_existingVisit != null)
+              _buildVisitedActions(listing!, _existingVisit!)
+            else
+              _buildStartVisitButton(listing),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStartVisitButton(Listing? listing) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: listing == null ? null : () => _startVisit(listing),
+        icon: const Icon(Icons.door_front_door_outlined),
+        label: const Text('Démarrer la visite'),
+      ),
+    );
+  }
+
+  Widget _buildVisitedActions(Listing listing, Visit existingVisit) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.visitDetail,
+              arguments: {'visit': existingVisit, 'listing': listing},
+            ).then((_) => _loadVisit()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: DoutangTheme.scoreGood,
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.assignment_turned_in_outlined),
+            label: const Text('Voir le bilan de visite'),
+          ),
+        ),
+        const SizedBox(height: DSpacing.sm),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _startVisit(listing, existingVisit: existingVisit),
+            icon: const Icon(Icons.refresh_outlined),
+            label: const Text('Refaire la visite'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _startVisit(Listing listing, {Visit? existingVisit}) async {
+    final profile = await ProfileStorageService.load();
+    if (!mounted) return;
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.visitQuestionnaire,
+      arguments: {
+        'listing': listing,
+        'profile': profile ?? UserProfile(owner: 'Moi'),
+        if (existingVisit != null) 'existingVisit': existingVisit,
+      },
+    );
+    await _loadVisit();
   }
 }
 
@@ -134,11 +212,9 @@ class _InfoRow extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: DoutangTheme.primary),
           const SizedBox(width: DSpacing.sm),
-          Text(label,
-              style: Theme.of(context).textTheme.bodyMedium),
+          Text(label, style: Theme.of(context).textTheme.bodyMedium),
           const Spacer(),
-          Text(value,
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(value, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );
