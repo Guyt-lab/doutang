@@ -25,6 +25,35 @@ class _AddListingScreenState extends State<AddListingScreen> {
   bool _isParsing = false;
   bool _isSaving = false;
   bool _showManual = false;
+  bool _initialized = false;
+
+  /// Non-null en mode édition.
+  Listing? _editingListing;
+
+  bool get _isEditMode => _editingListing != null;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    if (arg is Listing) {
+      setState(() {
+        _editingListing = arg;
+        _urlController.text = arg.url ?? '';
+        _titleController.text = arg.title;
+        if (arg.price != null) {
+          _priceController.text = arg.price!.toInt().toString();
+        }
+        if (arg.surface != null) {
+          _surfaceController.text = arg.surface!.toInt().toString();
+        }
+        _addressController.text = arg.address ?? '';
+        _showManual = true;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -81,16 +110,61 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final url = _urlController.text.trim().isEmpty
+        ? null
+        : _urlController.text.trim();
+
+    // Détection de doublons (mode ajout uniquement, et seulement si URL fournie)
+    if (!_isEditMode && url != null) {
+      final existing = await ListingStorageService.load();
+      Listing? dupe;
+      for (final l in existing) {
+        if (l.url == url) {
+          dupe = l;
+          break;
+        }
+      }
+      if (dupe != null && mounted) {
+        final choice = await showDialog<_DupeChoice>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Cette annonce existe déjà'),
+            content: Text(dupe!.title),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, _DupeChoice.viewExisting),
+                child: const Text('Voir l\'existante'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, _DupeChoice.addAnyway),
+                child: const Text('Ajouter quand même'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, _DupeChoice.cancel),
+                child: const Text('Annuler'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted) return;
+        if (choice == null || choice == _DupeChoice.cancel) return;
+        if (choice == _DupeChoice.viewExisting) {
+          Navigator.pop(context);
+          return;
+        }
+        // _DupeChoice.addAnyway → continue
+      }
+    }
+
     setState(() => _isSaving = true);
 
-    // Charge le prénom du profil local, fallback 'Moi'
     final profile = await ProfileStorageService.load();
-    final owner = profile?.owner ?? 'Moi';
+    final owner = _editingListing?.addedBy ?? profile?.owner ?? 'Moi';
 
     final listing = Listing(
-      url: _urlController.text.trim().isEmpty
-          ? null
-          : _urlController.text.trim(),
+      id: _editingListing?.id,
+      url: url,
       title: _titleController.text.trim(),
       price: _priceController.text.isEmpty
           ? null
@@ -102,9 +176,18 @@ class _AddListingScreenState extends State<AddListingScreen> {
           ? null
           : _addressController.text.trim(),
       addedBy: owner,
+      addedAt: _editingListing?.addedAt,
+      status: _editingListing?.status,
+      notes: _editingListing?.notes,
+      rooms: _editingListing?.rooms,
+      facts: _editingListing?.facts,
     );
 
-    await ListingStorageService.add(listing);
+    if (_isEditMode) {
+      await ListingStorageService.update(listing);
+    } else {
+      await ListingStorageService.add(listing);
+    }
 
     if (mounted) {
       setState(() => _isSaving = false);
@@ -118,7 +201,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajouter une annonce'),
+        title: Text(_isEditMode ? 'Modifier l\'annonce' : 'Ajouter une annonce'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(DSpacing.md),
@@ -250,7 +333,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isSaving ? null : () => _save(),
+                    onPressed: _isSaving ? null : _save,
                     child: _isSaving
                         ? const SizedBox(
                             width: 18,
@@ -260,7 +343,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Ajouter l\'annonce'),
+                        : Text(_isEditMode
+                            ? 'Modifier'
+                            : 'Ajouter l\'annonce'),
                   ),
                 ),
               ],
@@ -271,3 +356,5 @@ class _AddListingScreenState extends State<AddListingScreen> {
     );
   }
 }
+
+enum _DupeChoice { viewExisting, addAnyway, cancel }

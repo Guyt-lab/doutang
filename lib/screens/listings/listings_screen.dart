@@ -42,9 +42,16 @@ class _ListingsScreenState extends State<ListingsScreen> {
     }
   }
 
-  List<Listing> get _filtered => _filterStatus == null
-      ? _listings
-      : _listings.where((l) => l.status == _filterStatus).toList();
+  List<Listing> get _filtered {
+    if (_filterStatus == null) return _listings;
+    return _listings.where((l) {
+      if (l.status == _filterStatus) return true;
+      if (_filterStatus == ListingStatus.visitee) {
+        return _visitScoreByListingId.containsKey(l.id);
+      }
+      return false;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +70,7 @@ class _ListingsScreenState extends State<ListingsScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : listings.isEmpty
+          : _listings.isEmpty
               ? const EmptyState(
                   icon: Icons.home_outlined,
                   title: 'Aucune annonce',
@@ -77,24 +84,57 @@ class _ListingsScreenState extends State<ListingsScreen> {
                       onSelected: (s) => setState(() => _filterStatus = s),
                     ),
                     Expanded(
-                      child: ListView.separated(
-                        padding: const EdgeInsets.all(DSpacing.md),
-                        itemCount: listings.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: DSpacing.sm),
-                        itemBuilder: (context, index) {
-                          return ListingCard(
-                            listing: listings[index],
-                            matchingScore: 0.85,
-                            visitScore: _visitScoreByListingId[listings[index].id],
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              AppRoutes.listingDetail,
-                              arguments: listings[index],
+                      child: listings.isEmpty
+                          ? Center(
+                              child: Text(
+                                'Aucune annonce dans cette catégorie',
+                                style: TextStyle(
+                                  color: DoutangTheme.textSecondary,
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.all(DSpacing.md),
+                              itemCount: listings.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: DSpacing.sm),
+                              itemBuilder: (context, index) {
+                                final listing = listings[index];
+                                return Dismissible(
+                                  key: ValueKey(listing.id),
+                                  direction: DismissDirection.endToStart,
+                                  background: Container(
+                                    alignment: Alignment.centerRight,
+                                    padding: const EdgeInsets.only(
+                                        right: DSpacing.md),
+                                    decoration: BoxDecoration(
+                                      color: DoutangTheme.danger,
+                                      borderRadius: DRadius.card,
+                                    ),
+                                    child: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  onDismissed: (_) async {
+                                    await ListingStorageService.deleteById(
+                                        listing.id);
+                                    _loadListings();
+                                  },
+                                  child: ListingCard(
+                                    listing: listing,
+                                    matchingScore: 0.85,
+                                    visitScore:
+                                        _visitScoreByListingId[listing.id],
+                                    onTap: () => Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.listingDetail,
+                                      arguments: listing,
+                                    ).then((_) => _loadListings()),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                     ),
                   ],
                 ),

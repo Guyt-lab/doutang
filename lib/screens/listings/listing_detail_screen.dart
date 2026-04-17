@@ -20,7 +20,15 @@ class ListingDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () {}, // TODO
+            onPressed: listing == null
+                ? null
+                : () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.addListing,
+                      arguments: listing,
+                    ).then((_) {
+                      if (context.mounted) Navigator.pop(context);
+                    }),
           ),
         ],
       ),

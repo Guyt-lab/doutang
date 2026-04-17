@@ -51,8 +51,25 @@ class ListingStorageService {
     await save(listings, basePath: basePath);
   }
 
-  /// Supprime le fichier de stockage.
-  static Future<void> delete({String? basePath}) async {
+  /// Supprime l'annonce dont l'[id] correspond.
+  static Future<void> deleteById(String id, {String? basePath}) async {
+    final listings = await load(basePath: basePath);
+    listings.removeWhere((l) => l.id == id);
+    await save(listings, basePath: basePath);
+  }
+
+  /// Remplace l'annonce dont l'[id] correspond (last-write-wins).
+  static Future<void> update(Listing listing, {String? basePath}) async {
+    final listings = await load(basePath: basePath);
+    final idx = listings.indexWhere((l) => l.id == listing.id);
+    if (idx >= 0) {
+      listings[idx] = listing;
+      await save(listings, basePath: basePath);
+    }
+  }
+
+  /// Supprime le fichier de stockage entier (réservé aux tests).
+  static Future<void> deleteFile({String? basePath}) async {
     final file = await _file(basePath: basePath);
     if (file.existsSync()) await file.delete();
   }

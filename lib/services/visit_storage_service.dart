@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../models/listing.dart';
 import '../models/visit.dart';
+import 'listing_storage_service.dart';
 
 /// Persiste la liste des [Visit] dans un fichier JSON sur l'appareil.
 ///
@@ -56,6 +58,19 @@ class VisitStorageService {
       visits.add(visit);
     }
     await save(visits, basePath: basePath);
+    await _markListingAsVisited(visit.listingId, basePath: basePath);
+  }
+
+  static Future<void> _markListingAsVisited(
+    String listingId, {
+    String? basePath,
+  }) async {
+    final listings = await ListingStorageService.load(basePath: basePath);
+    final idx = listings.indexWhere((l) => l.id == listingId);
+    if (idx >= 0 && listings[idx].status != ListingStatus.visitee) {
+      listings[idx] = listings[idx].copyWith(status: ListingStatus.visitee);
+      await ListingStorageService.save(listings, basePath: basePath);
+    }
   }
 
   /// Supprime toutes les visites d'un listing donné.
