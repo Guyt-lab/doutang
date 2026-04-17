@@ -73,6 +73,13 @@ class VisitStorageService {
     }
   }
 
+  /// Supprime la visite avec l'[id] donné.
+  static Future<void> delete(String id, {String? basePath}) async {
+    final visits = await load(basePath: basePath);
+    visits.removeWhere((v) => v.id == id);
+    await save(visits, basePath: basePath);
+  }
+
   /// Supprime toutes les visites d'un listing donné.
   static Future<void> deleteForListing(
     String listingId, {

@@ -10,6 +10,7 @@ import '../screens/listings/listing_detail_screen.dart';
 import '../screens/listings/listings_screen.dart';
 import '../screens/profile/desiderata_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/visits/visit_detail_screen.dart';
 import '../screens/visits/visit_questionnaire_screen.dart';
 import '../screens/visits/visit_summary_screen.dart';
 import '../screens/visits/visits_screen.dart';
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String addListing = '/listing/add';
 
   static const String visits = '/visits';
+  static const String visitDetail = '/visits/detail';
   static const String visitQuestionnaire = '/visits/questionnaire';
   static const String visitSummary = '/visits/summary';
 
@@ -34,16 +36,31 @@ class AppRoutes {
         addListing: (_) => const AddListingScreen(),
         visits: (_) => const VisitsScreen(),
 
+        // Détail visite : attend {visit: Visit, listing: Listing}.
+        visitDetail: (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          final visit = args?['visit'] as Visit?;
+          final listing = args?['listing'] as Listing?;
+          return VisitDetailScreen(
+            visit: visit ?? Visit(listingId: '', owner: 'demo'),
+            listing: listing ??
+                Listing(title: 'Annonce sans titre', addedBy: 'demo'),
+          );
+        },
+
         // Questionnaire : attend {listing: Listing, profile: UserProfile}.
         visitQuestionnaire: (context) {
           final args = ModalRoute.of(context)?.settings.arguments
               as Map<String, dynamic>?;
           final listing = args?['listing'] as Listing?;
           final profile = args?['profile'] as UserProfile?;
+          final existingVisit = args?['existingVisit'] as Visit?;
           return VisitQuestionnaireScreen(
             listing: listing ??
                 Listing(title: 'Annonce sans titre', addedBy: 'demo'),
             profile: profile ?? UserProfile(owner: 'demo'),
+            existingVisit: existingVisit,
           );
         },
 

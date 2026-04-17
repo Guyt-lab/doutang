@@ -65,11 +65,10 @@ class _VisitsScreenState extends State<VisitsScreen> {
                           ? null
                           : () => Navigator.pushNamed(
                                 context,
-                                AppRoutes.visitSummary,
+                                AppRoutes.visitDetail,
                                 arguments: {
                                   'visit': visit,
                                   'listing': listing,
-                                  'blockers': const [],
                                 },
                               ).then((_) => _load()),
                     );

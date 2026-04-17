@@ -27,10 +27,14 @@ class VisitQuestionnaireScreen extends StatefulWidget {
   final Listing listing;
   final UserProfile profile;
 
+  /// Visite existante à ré-éditer. Null = nouvelle visite.
+  final Visit? existingVisit;
+
   const VisitQuestionnaireScreen({
     super.key,
     required this.listing,
     required this.profile,
+    this.existingVisit,
   });
 
   @override
@@ -68,6 +72,9 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _filterQuestions();
+    if (widget.existingVisit != null) {
+      _prefillFromExistingVisit(widget.existingVisit!);
+    }
   }
 
   @override
@@ -103,6 +110,72 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
         .toList();
     _questionsApres =
         active.where((q) => q.timing == QuestionTiming.apres).toList();
+  }
+
+  // ── Pré-remplissage depuis une visite existante ────────────────────────────
+
+  void _prefillFromExistingVisit(Visit v) {
+    final a = v.answers;
+
+    void put(String key, dynamic val) {
+      if (val != null) _answers[key] = val;
+    }
+
+    void putStr(String key, String? val) {
+      if (val != null && val.isNotEmpty) _answers[key] = val;
+    }
+
+    // s1
+    put(kQTransportMinutes, a.transportScore);
+    putStr(kQTransportType, a.transportType);
+    putStr(kQMobilityServices, a.mobilityService);
+    put(kQNoiseStreet, a.noiseScore ?? a.calme);
+    put(kQNeighborhoodVibe, a.neighborhoodScore ?? a.quartier);
+    put(kQSafetyFeeling, a.safetyScore);
+    put(kQGreenSpaces, a.greenScore);
+    // s2
+    put(kQBuildingCondition, a.commonAreasScore);
+    put(kQElevatorPresent, a.elevatorOk ?? a.ascenseur);
+    put(kQCave, a.caveOk ?? a.cave);
+    put(kQBikeStorage, a.bikeStorage);
+    put(kQSecureDoor, a.secureDoorOk ?? a.digicode);
+    // s3
+    put(kQLuminosityLiving, a.luminosityScore ?? a.luminosite);
+    putStr(kQVisitTime, a.visitTime);
+    put(kQVisAVis, a.visAVisScore);
+    put(kQDoubleGlazing, a.doubleVitrage);
+    // s4
+    put(kQPhonicsFloors, a.phonicsScore);
+    put(kQHumidityDetected, a.humidityDetected);
+    put(kQHeatingDistribution, a.heatingDistributionScore ?? a.chauffage);
+    put(kQThermalInsulation, a.thermalInsulationScore);
+    // s5
+    put(kQGeneralState, a.etatGeneral);
+    put(kQElectricPanel, a.electricPanelOk);
+    put(kQEarthGround, a.earthGroundOk);
+    put(kQOutlets, a.outletsScore);
+    put(kQWaterPressure, a.waterPressureOk);
+    put(kQWaterQuality, a.waterQualityScore);
+    put(kQMobileSignal, a.mobileSignalOk);
+    put(kQVmc, a.vmcOk);
+    // s6
+    put(kQKitchenLayout, a.cuisine);
+    put(kQKitchenWorktop, a.kitchenWorktopScore);
+    put(kQKitchenHood, a.hoodOk);
+    put(kQWashingMachineSpace, a.washingMachineSpace);
+    put(kQFridgeSpace, a.fridgeSpaceOk);
+    put(kQBathroomSize, a.salleDeBain);
+    put(kQTowelRadiator, a.towelRadiatorSdb);
+    // s7
+    put(kQStorageSpace, a.rangements);
+    put(kQBalconyTerrace, a.balconOuTerrasse);
+    // s8
+    putStr(kQDepartureReason, a.departureReason);
+    putStr(kQCoupDeCoeur, a.coupDeCoeur);
+    putStr(kQPointRedhibitoire, a.pointRedhibitoire);
+
+    _feeling = v.feeling;
+    if (a.renovation != null) _renovation = a.renovation!;
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
