@@ -5,37 +5,38 @@ import 'package:path_provider/path_provider.dart';
 
 import '../models/listing.dart';
 
-/// Persiste la liste des [Listing] dans un fichier JSON sur l'appareil.
-///
-/// Le paramètre [basePath] est réservé aux tests : il permet d'injecter
-/// un répertoire temporaire sans dépendance à la plateforme.
 class ListingStorageService {
   ListingStorageService._();
 
-  static const _filename = 'listings.json';
+  static const _defaultFilename = 'listings.json';
 
-  static Future<File> _file({String? basePath}) async {
+  static String _filename(String projectId) =>
+      projectId.isEmpty ? _defaultFilename : '${projectId}_listings.json';
+
+  static Future<File> _file({String? basePath, String projectId = ''}) async {
     final dir = basePath != null
         ? Directory(basePath)
         : await getApplicationDocumentsDirectory();
-    return File('${dir.path}/$_filename');
+    return File('${dir.path}/${_filename(projectId)}');
   }
 
-  /// Écrase le fichier avec la liste fournie.
   static Future<void> save(
     List<Listing> listings, {
     String? basePath,
+    String projectId = '',
   }) async {
-    final file = await _file(basePath: basePath);
+    final file = await _file(basePath: basePath, projectId: projectId);
     await file.writeAsString(
       const JsonEncoder.withIndent('  ')
           .convert(listings.map((l) => l.toJson()).toList()),
     );
   }
 
-  /// Charge la liste depuis le fichier. Retourne une liste vide si absent.
-  static Future<List<Listing>> load({String? basePath}) async {
-    final file = await _file(basePath: basePath);
+  static Future<List<Listing>> load({
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final file = await _file(basePath: basePath, projectId: projectId);
     if (!file.existsSync()) return [];
     final content = await file.readAsString();
     final raw = jsonDecode(content) as List<dynamic>;
@@ -44,33 +45,45 @@ class ListingStorageService {
         .toList();
   }
 
-  /// Charge la liste, ajoute [listing] à la fin, puis sauvegarde.
-  static Future<void> add(Listing listing, {String? basePath}) async {
-    final listings = await load(basePath: basePath);
+  static Future<void> add(
+    Listing listing, {
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final listings = await load(basePath: basePath, projectId: projectId);
     listings.add(listing);
-    await save(listings, basePath: basePath);
+    await save(listings, basePath: basePath, projectId: projectId);
   }
 
-  /// Supprime l'annonce dont l'[id] correspond.
-  static Future<void> deleteById(String id, {String? basePath}) async {
-    final listings = await load(basePath: basePath);
+  static Future<void> deleteById(
+    String id, {
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final listings = await load(basePath: basePath, projectId: projectId);
     listings.removeWhere((l) => l.id == id);
-    await save(listings, basePath: basePath);
+    await save(listings, basePath: basePath, projectId: projectId);
   }
 
-  /// Remplace l'annonce dont l'[id] correspond (last-write-wins).
-  static Future<void> update(Listing listing, {String? basePath}) async {
-    final listings = await load(basePath: basePath);
+  static Future<void> update(
+    Listing listing, {
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final listings = await load(basePath: basePath, projectId: projectId);
     final idx = listings.indexWhere((l) => l.id == listing.id);
     if (idx >= 0) {
       listings[idx] = listing;
-      await save(listings, basePath: basePath);
+      await save(listings, basePath: basePath, projectId: projectId);
     }
   }
 
   /// Supprime le fichier de stockage entier (réservé aux tests).
-  static Future<void> deleteFile({String? basePath}) async {
-    final file = await _file(basePath: basePath);
+  static Future<void> deleteFile({
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final file = await _file(basePath: basePath, projectId: projectId);
     if (file.existsSync()) await file.delete();
   }
 }

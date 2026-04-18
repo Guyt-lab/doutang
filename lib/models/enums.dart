@@ -18,6 +18,18 @@ T? enumFromJson<T extends Enum>(List<T> values, String? json) {
 /// Sérialise un enum (retourne [e.name] ou null).
 String? enumToJson(Enum? e) => e?.name;
 
+// ── Projet ───────────────────────────────────────────────────────────────
+
+enum PropertyType { appartement, maison, lesDeux }
+
+// ── Annonce ──────────────────────────────────────────────────────────────
+
+/// Type de bien d'une annonce spécifique (appartement ou maison).
+enum ListingPropertyKind { appartement, maison }
+
+/// Type de transaction d'une annonce (achat ou location).
+enum ListingTransactionKind { achat, location }
+
 // ── Modèle de bien ────────────────────────────────────────────────────────
 
 /// Style architectural du bâtiment.
@@ -106,6 +118,9 @@ enum QuestionType {
 
   /// Photo attachée.
   photo,
+
+  /// Sélection multiple parmi des options prédéfinies.
+  multiChoice,
 }
 
 /// Moment optimal pour poser la question.

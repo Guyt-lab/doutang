@@ -7,6 +7,7 @@ import '../../models/profile.dart';
 import '../../models/renovation_answers.dart';
 import '../../models/visit.dart';
 import '../../services/profile_storage_service.dart';
+import '../../services/project_service.dart';
 import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
@@ -35,7 +36,8 @@ class _VisitDetailScreenState extends State<VisitDetailScreen> {
   }
 
   Future<void> _reload() async {
-    final visits = await VisitStorageService.load();
+    final projectId = await ProjectService.getActiveId() ?? '';
+    final visits = await VisitStorageService.load(projectId: projectId);
     final updated = visits.firstWhere(
       (v) => v.listingId == widget.listing.id && v.owner == _currentVisit.owner,
       orElse: () => _currentVisit,
@@ -441,7 +443,8 @@ class _VisitDetailScreenState extends State<VisitDetailScreen> {
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    await VisitStorageService.delete(_currentVisit.id);
+    final projectId = await ProjectService.getActiveId() ?? '';
+    await VisitStorageService.delete(_currentVisit.id, projectId: projectId);
     if (context.mounted) {
       Navigator.popUntil(context, ModalRoute.withName(AppRoutes.visits));
     }

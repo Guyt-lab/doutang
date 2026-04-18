@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../models/profile.dart';
 import '../../services/profile_storage_service.dart';
+import '../../services/project_service.dart';
 import '../../theme/doutang_theme.dart';
 
 class DesiderataScreen extends StatefulWidget {
@@ -58,7 +59,8 @@ class _DesiderataScreenState extends State<DesiderataScreen> {
   // ── Persistence ───────────────────────────────────────────────────────────
 
   Future<void> _loadProfile() async {
-    final profile = await ProfileStorageService.load();
+    final projectId = await ProjectService.getActiveId() ?? '';
+    final profile = await ProfileStorageService.load(projectId: projectId);
     if (profile != null && mounted) {
       setState(() {
         _ownerController.text = profile.owner;
@@ -98,7 +100,8 @@ class _DesiderataScreenState extends State<DesiderataScreen> {
       weights: Map<String, int>.from(_weights),
     );
 
-    await ProfileStorageService.save(profile);
+    final projectId = await ProjectService.getActiveId() ?? '';
+    await ProfileStorageService.save(profile, projectId: projectId);
 
     if (mounted) {
       setState(() => _saving = false);

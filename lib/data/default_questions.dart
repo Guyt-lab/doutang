@@ -2,6 +2,7 @@ import '../models/enums.dart';
 import '../models/question_template.dart';
 
 // ── Constantes d'ID (stables entre versions) ─────────────────────────────────
+
 // s1 — Transports & Quartier
 const kQTransportMinutes = 'q_transport_minutes';
 const kQTransportType = 'q_transport_type';
@@ -17,17 +18,26 @@ const kQBuildingCondition = 'q_building_condition';
 const kQCommonAreas = 'q_common_areas';
 const kQElevatorPresent = 'q_elevator_present';
 const kQElevatorOk = 'q_elevator_ok';
+const kQElevatorSize = 'q_elevator_size';
 const kQCave = 'q_cave';
+const kQCaveAccess = 'q_cave_access';
+const kQCaveDoor = 'q_cave_door';
+const kQCaveDry = 'q_cave_dry';
 const kQBikeStorage = 'q_bike_storage';
+const kQBikeStorageSecured = 'q_bike_storage_secured';
+const kQBikeStorageSpace = 'q_bike_storage_space';
+const kQParking = 'q_parking';
+const kQTrashAccess = 'q_trash_access';
+const kQDisabledAccess = 'q_disabled_access';
 const kQSecureDoor = 'q_secure_door';
+const kQBuildingConcierge = 'q_building_concierge';
 
 // s3 — Luminosité & Vue
 const kQLuminosityLiving = 'q_luminosity_living';
 const kQLuminosityBedroom = 'q_luminosity_bedroom';
 const kQExposure = 'q_exposure';
 const kQVisAVis = 'q_vis_a_vis';
-const kQVisitTime = 'q_visit_time';
-const kQDoubleGlazing = 'q_double_glazing';
+const kQVisitTime = 'q_visit_time'; // conservé pour rétrocompat
 
 // s4 — Acoustique & Isolation
 const kQPhonicsFloors = 'q_phonics_floors';
@@ -35,63 +45,86 @@ const kQPhonicsNeighbors = 'q_phonics_neighbors';
 const kQPhonicsStreet = 'q_phonics_street';
 const kQThermalInsulation = 'q_thermal_insulation';
 const kQHumidityDetected = 'q_humidity_detected';
-const kQHeatingDistribution = 'q_heating_distribution';
+const kQDoubleGlazing = 'q_double_glazing';
 
-// s5 — État général & Équipements techniques
+// s5 — État général
 const kQGeneralState = 'q_general_state';
 const kQFloorsState = 'q_floors_state';
 const kQWallsState = 'q_walls_state';
-const kQElectricPanel = 'q_electric_panel';
-const kQEarthGround = 'q_earth_ground';
-const kQOutlets = 'q_outlets';
-const kQWaterPressure = 'q_water_pressure';
-const kQWaterQuality = 'q_water_quality';
-const kQMobileSignal = 'q_mobile_signal';
-const kQVmc = 'q_vmc';
 
-// s6 — Cuisine & Salle de bain
+// s_living — Pièce à vivre / Salon
+const kQLivingRoomSize = 'q_living_room_size';
+const kQHallway = 'q_hallway';
+const kQSeparateToilet = 'q_separate_toilet';
+const kQRadiatorLiving = 'q_radiator_living';
+
+// s_kitchen — Cuisine
 const kQKitchenLayout = 'q_kitchen_layout';
+const kQKitchenOpenClosed = 'q_kitchen_open_closed';
 const kQKitchenWorktop = 'q_kitchen_worktop';
 const kQKitchenStorage = 'q_kitchen_storage';
 const kQKitchenHood = 'q_kitchen_hood';
 const kQWashingMachineSpace = 'q_washing_machine_space';
+const kQDishwasherSpace = 'q_dishwasher_space';
 const kQFridgeSpace = 'q_fridge_space';
-const kQBathroomSize = 'q_bathroom_size';
-const kQTowelRadiator = 'q_towel_radiator';
+const kQTrashSpace = 'q_trash_space';
+const kQVmcKitchen = 'q_vmc_kitchen';
 
-// s7 — Chambres & Espaces de vie
-const kQLivingRoomSize = 'q_living_room_size';
+// s_bathroom — Salle de bain
+const kQBathroomSize = 'q_bathroom_size';
+const kQBathroomFeatures = 'q_bathroom_features';
+const kQTowelRadiator = 'q_towel_radiator';
+const kQRadiatorBathroom = 'q_radiator_bathroom';
+
+// s_bedrooms — Chambres
 const kQBedroomCount = 'q_bedroom_count';
 const kQStorageSpace = 'q_storage_space';
-const kQHallway = 'q_hallway';
-const kQSeparateToilet = 'q_separate_toilet';
-const kQBalconyTerrace = 'q_balcony_terrace';
-const kQOutdoorQuality = 'q_outdoor_quality';
+const kQRadiatorBedroom = 'q_radiator_bedroom';
+
+// s_elec — Électricité
+const kQElectricPanel = 'q_electric_panel';
+const kQEarthGround = 'q_earth_ground';
+const kQOutlets = 'q_outlets';
+const kQMobileSignal = 'q_mobile_signal';
+
+// s_heating — Chauffage
+const kQHeatingSystem = 'q_heating_system';
+const kQHeatingDistribution = 'q_heating_distribution'; // conservé rétrocompat
+
+// s_water — Eau
+const kQWaterPressure = 'q_water_pressure';
+const kQWaterQuality = 'q_water_quality';
+const kQVmc = 'q_vmc';
+
+// s7 — Espaces extérieurs (visite)
+const kQBalconyTerrace = 'q_balcony_terrace'; // conservé rétrocompat
+const kQOutdoorSurface = 'q_outdoor_surface';
+const kQOutdoorNeighborExposure = 'q_outdoor_neighbor_exposure';
+const kQOutdoorSunExposure = 'q_outdoor_sun_exposure';
+const kQOutdoorViewQuality = 'q_outdoor_view_quality';
 
 // s8 — Aspects pratiques & Administration
 const kQRentPrice = 'q_rent_price';
+const kQChargesIncluded = 'q_charges_included';
+const kQChargesAmount = 'q_charges_amount';
 const kQAgencyFees = 'q_agency_fees';
 const kQDeposit = 'q_deposit';
 const kQAvailability = 'q_availability';
 const kQDepartureReason = 'q_departure_reason';
-const kQChargesIncluded = 'q_charges_included';
 const kQLandTax = 'q_land_tax';
 const kQRenovationNeeded = 'q_renovation_needed';
 const kQCoupDeCoeur = 'q_coup_de_coeur';
 const kQPointRedhibitoire = 'q_point_redhibitoire';
 
-/// Liste des 62 questions du questionnaire de visite par défaut.
-///
-/// Organisées par section (s1 à s8).
-/// Les IDs sont stables — utiliser les constantes kQ* pour les références.
 const List<QuestionTemplate> kDefaultQuestions = [
-  // ── s1 : Transports & Quartier (8) ──────────────────────────────────────
+
+  // ── s1 : Transports & Quartier ────────────────────────────────────────────
 
   QuestionTemplate(
     id: kQTransportMinutes,
     section: 's1',
-    text: 'Combien de minutes de trajet jusqu\'à votre lieu de travail ?',
-    hint: 'Testez en conditions réelles (heure de pointe si possible)',
+    text: 'Proximité des transports',
+    hint: '5 = station à moins de 5 min à pied, 1 = très éloigné',
     level: QuestionLevel.critical,
     type: QuestionType.score,
     timing: QuestionTiming.avant,
@@ -99,20 +132,20 @@ const List<QuestionTemplate> kDefaultQuestions = [
   QuestionTemplate(
     id: kQTransportType,
     section: 's1',
-    text: 'Quels moyens de transport avez-vous utilisés ?',
-    hint: 'Métro, bus, vélo, voiture, à pied…',
+    text: 'Moyens de transports à proximité',
     level: QuestionLevel.important,
-    type: QuestionType.text,
+    type: QuestionType.multiChoice,
     timing: QuestionTiming.avant,
+    options: ['Métro', 'RER', 'Train', 'Bus', 'Tramway', 'Vélo'],
   ),
   QuestionTemplate(
     id: kQMobilityServices,
     section: 's1',
-    text: 'Y a-t-il des services de mobilité en libre-service à proximité ?',
-    hint: 'Vélib, trottinettes, covoiturage…',
+    text: 'Services de mobilité disponibles à proximité',
     level: QuestionLevel.nice,
-    type: QuestionType.text,
+    type: QuestionType.multiChoice,
     timing: QuestionTiming.avant,
+    options: ['Vélib', 'Trottinette', 'Scooter'],
   ),
   QuestionTemplate(
     id: kQNoiseStreet,
@@ -122,7 +155,6 @@ const List<QuestionTemplate> kDefaultQuestions = [
     level: QuestionLevel.important,
     type: QuestionType.score,
     timing: QuestionTiming.pendant,
-    withPhoto: false,
   ),
   QuestionTemplate(
     id: kQNeighborhoodVibe,
@@ -161,8 +193,61 @@ const List<QuestionTemplate> kDefaultQuestions = [
     timing: QuestionTiming.avant,
   ),
 
-  // ── s2 : Immeuble & Parties communes (7) ────────────────────────────────
+  // ── s2 : Immeuble & Parties communes ─────────────────────────────────────
 
+  QuestionTemplate(
+    id: kQElevatorPresent,
+    section: 's2',
+    text: 'Y a-t-il un ascenseur dans l\'immeuble ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQCave,
+    section: 's2',
+    text: 'Y a-t-il une cave incluse ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+  ),
+  QuestionTemplate(
+    id: kQBikeStorage,
+    section: 's2',
+    text: 'Y a-t-il un local vélos sécurisé ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQParking,
+    section: 's2',
+    text: 'Y a-t-il un parking ?',
+    hint: 'Box, place en sous-sol, parking extérieur…',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+  ),
+  QuestionTemplate(
+    id: kQSecureDoor,
+    section: 's2',
+    text: 'Porte d\'entrée d\'immeuble sécurisée (digicode ou interphone) ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQBuildingConcierge,
+    section: 's2',
+    text: 'Y a-t-il un gardien ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
   QuestionTemplate(
     id: kQBuildingCondition,
     section: 's2',
@@ -172,6 +257,7 @@ const List<QuestionTemplate> kDefaultQuestions = [
     type: QuestionType.score,
     timing: QuestionTiming.pendant,
     withPhoto: true,
+    appliesTo: [ProjectFilter.appartement],
   ),
   QuestionTemplate(
     id: kQCommonAreas,
@@ -182,14 +268,7 @@ const List<QuestionTemplate> kDefaultQuestions = [
     type: QuestionType.score,
     timing: QuestionTiming.pendant,
     withPhoto: true,
-  ),
-  QuestionTemplate(
-    id: kQElevatorPresent,
-    section: 's2',
-    text: 'Y a-t-il un ascenseur dans l\'immeuble ?',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.appartement],
   ),
   QuestionTemplate(
     id: kQElevatorOk,
@@ -198,33 +277,84 @@ const List<QuestionTemplate> kDefaultQuestions = [
     level: QuestionLevel.nice,
     type: QuestionType.yesNo,
     timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
   ),
   QuestionTemplate(
-    id: kQCave,
+    id: kQElevatorSize,
     section: 's2',
-    text: 'Y a-t-il une cave incluse ?',
+    text: 'Taille de l\'ascenseur ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.multiChoice,
+    timing: QuestionTiming.pendant,
+    options: ['Petit', 'Moyen', 'Grand'],
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQCaveAccess,
+    section: 's2',
+    text: 'Accès à la cave sécurisé (clé / badge) ?',
     level: QuestionLevel.nice,
     type: QuestionType.yesNo,
     timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
   ),
   QuestionTemplate(
-    id: kQBikeStorage,
+    id: kQCaveDoor,
     section: 's2',
-    text: 'Y a-t-il un local vélos sécurisé ?',
+    text: 'Porte de cave sécurisée ?',
     level: QuestionLevel.nice,
     type: QuestionType.yesNo,
     timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
   ),
   QuestionTemplate(
-    id: kQSecureDoor,
+    id: kQCaveDry,
     section: 's2',
-    text: 'Porte d\'entrée sécurisée (digicode ou interphone) ?',
-    level: QuestionLevel.important,
+    text: 'Cave sèche (pas d\'humidité) ?',
+    level: QuestionLevel.nice,
     type: QuestionType.yesNo,
-    timing: QuestionTiming.avant,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQBikeStorageSecured,
+    section: 's2',
+    text: 'Local à vélos sécurisé ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQBikeStorageSpace,
+    section: 's2',
+    text: 'Place disponible dans le local à vélos ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQTrashAccess,
+    section: 's2',
+    text: 'Accès au local poubelle',
+    hint: '5 = très accessible et propre, 1 = difficile d\'accès',
+    level: QuestionLevel.nice,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDisabledAccess,
+    section: 's2',
+    text: 'Accès mobilité réduite à l\'immeuble ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.appartement],
   ),
 
-  // ── s3 : Luminosité & Vue (6) ────────────────────────────────────────────
+  // ── s3 : Luminosité & Vue ─────────────────────────────────────────────────
 
   QuestionTemplate(
     id: kQLuminosityLiving,
@@ -264,26 +394,8 @@ const List<QuestionTemplate> kDefaultQuestions = [
     type: QuestionType.score,
     timing: QuestionTiming.pendant,
   ),
-  QuestionTemplate(
-    id: kQVisitTime,
-    section: 's3',
-    text: 'À quelle heure avez-vous visité ?',
-    hint: 'Important pour interpréter la luminosité',
-    level: QuestionLevel.important,
-    type: QuestionType.text,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQDoubleGlazing,
-    section: 's3',
-    text: 'Double vitrage aux fenêtres ?',
-    hint: 'Vérifiez en frappant sur la vitre',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
 
-  // ── s4 : Acoustique & Isolation (6) ─────────────────────────────────────
+  // ── s4 : Acoustique & Isolation ───────────────────────────────────────────
 
   QuestionTemplate(
     id: kQPhonicsFloors,
@@ -332,16 +444,16 @@ const List<QuestionTemplate> kDefaultQuestions = [
     withPhoto: true,
   ),
   QuestionTemplate(
-    id: kQHeatingDistribution,
+    id: kQDoubleGlazing,
     section: 's4',
-    text: 'Homogénéité du chauffage dans toutes les pièces',
-    hint: '5 = parfaitement uniforme, 1 = très inégal',
+    text: 'Double vitrage aux fenêtres ?',
+    hint: 'Vérifiez en frappant sur la vitre',
     level: QuestionLevel.important,
-    type: QuestionType.score,
+    type: QuestionType.yesNo,
     timing: QuestionTiming.pendant,
   ),
 
-  // ── s5 : État général & Équipements techniques (10) ─────────────────────
+  // ── s5 : État général ─────────────────────────────────────────────────────
 
   QuestionTemplate(
     id: kQGeneralState,
@@ -373,150 +485,12 @@ const List<QuestionTemplate> kDefaultQuestions = [
     timing: QuestionTiming.pendant,
     withPhoto: true,
   ),
-  QuestionTemplate(
-    id: kQElectricPanel,
-    section: 's5',
-    text: 'Tableau électrique en bon état ?',
-    hint: 'Disjoncteurs identifiés, pas de bricolage visible',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-    withPhoto: true,
-  ),
-  QuestionTemplate(
-    id: kQEarthGround,
-    section: 's5',
-    text: 'Présence d\'une prise de terre ?',
-    hint: 'Testez avec un détecteur ou regardez les prises (3 trous)',
-    level: QuestionLevel.nice,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQOutlets,
-    section: 's5',
-    text: 'Nombre et qualité des prises électriques',
-    hint: '5 = nombreuses et bien placées, 1 = insuffisant',
-    level: QuestionLevel.important,
-    type: QuestionType.score,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQWaterPressure,
-    section: 's5',
-    text: 'Pression d\'eau suffisante ?',
-    hint: 'Ouvrez les robinets, testez la douche',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQWaterQuality,
-    section: 's5',
-    text: 'Qualité de l\'eau (goût, dureté)',
-    hint: '5 = excellente, 1 = très calcaire ou mauvais goût',
-    level: QuestionLevel.nice,
-    type: QuestionType.score,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQMobileSignal,
-    section: 's5',
-    text: 'Bon signal mobile dans l\'appartement ?',
-    hint: 'Testez dans les pièces les plus enclavées',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQVmc,
-    section: 's5',
-    text: 'VMC / ventilation présente et fonctionnelle ?',
-    hint: 'Aérations dans SdB, cuisine, WC',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
 
-  // ── s6 : Cuisine & Salle de bain (8) ────────────────────────────────────
-
-  QuestionTemplate(
-    id: kQKitchenLayout,
-    section: 's6',
-    text: 'Configuration et espace de la cuisine',
-    hint: 'Superficie, circulation, ergonomie',
-    level: QuestionLevel.important,
-    type: QuestionType.score,
-    timing: QuestionTiming.pendant,
-    withPhoto: true,
-  ),
-  QuestionTemplate(
-    id: kQKitchenWorktop,
-    section: 's6',
-    text: 'Plans de travail suffisants',
-    hint: '5 = très généreux, 1 = quasi inexistant',
-    level: QuestionLevel.important,
-    type: QuestionType.score,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQKitchenStorage,
-    section: 's6',
-    text: 'Rangements cuisine (placards, tiroirs)',
-    hint: '5 = très bon, 1 = insuffisant',
-    level: QuestionLevel.important,
-    type: QuestionType.score,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQKitchenHood,
-    section: 's6',
-    text: 'Hotte aspirante présente ?',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQWashingMachineSpace,
-    section: 's6',
-    text: 'Place pour un lave-linge ?',
-    hint: 'En cuisine, SdB ou cellier',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQFridgeSpace,
-    section: 's6',
-    text: 'Place pour un réfrigérateur de taille correcte ?',
-    level: QuestionLevel.nice,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQBathroomSize,
-    section: 's6',
-    text: 'Taille et fonctionnalité de la salle de bain',
-    hint: '5 = spacieuse et bien agencée, 1 = exiguë',
-    level: QuestionLevel.important,
-    type: QuestionType.score,
-    timing: QuestionTiming.pendant,
-    withPhoto: true,
-  ),
-  QuestionTemplate(
-    id: kQTowelRadiator,
-    section: 's6',
-    text: 'Sèche-serviettes dans la salle de bain ?',
-    level: QuestionLevel.nice,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.pendant,
-  ),
-
-  // ── s7 : Chambres & Espaces de vie (7) ──────────────────────────────────
+  // ── s_living : Pièce à vivre / Salon ──────────────────────────────────────
 
   QuestionTemplate(
     id: kQLivingRoomSize,
-    section: 's7',
+    section: 's_living',
     text: 'Taille et confort du salon / séjour',
     hint: '5 = grand et agréable, 1 = trop petit',
     level: QuestionLevel.critical,
@@ -525,8 +499,173 @@ const List<QuestionTemplate> kDefaultQuestions = [
     withPhoto: true,
   ),
   QuestionTemplate(
+    id: kQHallway,
+    section: 's_living',
+    text: 'Présence d\'un couloir ou hall d\'entrée ?',
+    hint: 'Limite les nuisances acoustiques et visuelles',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQRadiatorLiving,
+    section: 's_living',
+    text: 'Présence d\'un radiateur dans le salon ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+
+  // ── s_kitchen : Cuisine ───────────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQKitchenLayout,
+    section: 's_kitchen',
+    text: 'Configuration et espace de la cuisine',
+    hint: 'Superficie, circulation, ergonomie',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+  ),
+  QuestionTemplate(
+    id: kQKitchenOpenClosed,
+    section: 's_kitchen',
+    text: 'Cuisine ouverte ou fermée ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.multiChoice,
+    timing: QuestionTiming.pendant,
+    options: ['Ouverte', 'Semi-ouverte', 'Fermée'],
+  ),
+  QuestionTemplate(
+    id: kQKitchenWorktop,
+    section: 's_kitchen',
+    text: 'Plans de travail suffisants',
+    hint: '5 = très généreux, 1 = quasi inexistant',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQKitchenStorage,
+    section: 's_kitchen',
+    text: 'Rangements cuisine (placards, tiroirs)',
+    hint: '5 = très bon, 1 = insuffisant',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQKitchenHood,
+    section: 's_kitchen',
+    text: 'Hotte aspirante présente ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQWashingMachineSpace,
+    section: 's_kitchen',
+    text: 'Place pour un lave-linge ?',
+    hint: 'En cuisine, SdB ou cellier',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQFridgeSpace,
+    section: 's_kitchen',
+    text: 'Place pour un réfrigérateur de taille correcte ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQDishwasherSpace,
+    section: 's_kitchen',
+    text: 'Place pour un lave-vaisselle ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQTrashSpace,
+    section: 's_kitchen',
+    text: 'Place pour les poubelles de tri ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQVmcKitchen,
+    section: 's_kitchen',
+    text: 'Ventilation / VMC en cuisine ?',
+    hint: 'Hotte raccordée ou aération murale',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+
+  // ── s_bathroom : Salle de bain ────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQBathroomSize,
+    section: 's_bathroom',
+    text: 'Taille et fonctionnalité de la salle de bain',
+    hint: '5 = spacieuse et bien agencée, 1 = exiguë',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+  ),
+  QuestionTemplate(
+    id: kQBathroomFeatures,
+    section: 's_bathroom',
+    text: 'Équipements présents',
+    level: QuestionLevel.important,
+    type: QuestionType.multiChoice,
+    timing: QuestionTiming.pendant,
+    options: [
+      'Douche',
+      'Douche italienne',
+      'Baignoire',
+      'Vasque unique',
+      'Double vasque',
+      'WC',
+      'Présence VMC',
+      'Présence fenêtre',
+    ],
+  ),
+  QuestionTemplate(
+    id: kQSeparateToilet,
+    section: 's_bathroom',
+    text: 'WC séparés de la salle de bain ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQTowelRadiator,
+    section: 's_bathroom',
+    text: 'Sèche-serviettes dans la salle de bain ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQRadiatorBathroom,
+    section: 's_bathroom',
+    text: 'Présence d\'un radiateur dans la salle de bain ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+
+  // ── s_bedrooms : Chambres ─────────────────────────────────────────────────
+
+  QuestionTemplate(
     id: kQBedroomCount,
-    section: 's7',
+    section: 's_bedrooms',
     text: 'Nombre et taille des chambres',
     hint: '5 = nombreuses et spacieuses, 1 = insuffisant',
     level: QuestionLevel.critical,
@@ -536,7 +675,7 @@ const List<QuestionTemplate> kDefaultQuestions = [
   ),
   QuestionTemplate(
     id: kQStorageSpace,
-    section: 's7',
+    section: 's_bedrooms',
     text: 'Espaces de rangement (placards, dressing)',
     hint: '5 = excellent, 1 = quasi inexistant',
     level: QuestionLevel.important,
@@ -544,49 +683,163 @@ const List<QuestionTemplate> kDefaultQuestions = [
     timing: QuestionTiming.pendant,
   ),
   QuestionTemplate(
-    id: kQHallway,
-    section: 's7',
-    text: 'Présence d\'un couloir ou hall d\'entrée ?',
-    hint: 'Limite les nuisances acoustiques et visuelles',
+    id: kQRadiatorBedroom,
+    section: 's_bedrooms',
+    text: 'Présence d\'un radiateur dans les chambres ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+
+  // ── s_elec : Électricité ──────────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQElectricPanel,
+    section: 's_elec',
+    text: 'Tableau électrique en bon état ?',
+    hint: 'Disjoncteurs identifiés, pas de bricolage visible',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+  ),
+  QuestionTemplate(
+    id: kQEarthGround,
+    section: 's_elec',
+    text: 'Présence d\'une prise de terre ?',
+    hint: 'Testez avec un détecteur ou regardez les prises (3 trous)',
     level: QuestionLevel.nice,
     type: QuestionType.yesNo,
     timing: QuestionTiming.pendant,
   ),
   QuestionTemplate(
-    id: kQSeparateToilet,
-    section: 's7',
-    text: 'WC séparés de la salle de bain ?',
-    level: QuestionLevel.nice,
+    id: kQOutlets,
+    section: 's_elec',
+    text: 'Nombre et qualité des prises électriques',
+    hint: '5 = nombreuses et bien placées, 1 = insuffisant',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQMobileSignal,
+    section: 's_elec',
+    text: 'Bon signal mobile dans l\'appartement ?',
+    hint: 'Testez dans les pièces les plus enclavées',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+  ),
+
+  // ── s_heating : Chauffage ─────────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQHeatingSystem,
+    section: 's_heating',
+    text: 'Type et mode de chauffage',
+    level: QuestionLevel.important,
+    type: QuestionType.multiChoice,
+    timing: QuestionTiming.pendant,
+    options: [
+      'Gaz individuel',
+      'Gaz collectif',
+      'Électrique',
+      'Pompe à chaleur',
+      'Plancher chauffant',
+      'Poêle',
+      'Climatisation réversible',
+    ],
+  ),
+
+  // ── s_water : Eau ─────────────────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQWaterPressure,
+    section: 's_water',
+    text: 'Pression d\'eau suffisante ?',
+    hint: 'Ouvrez les robinets, testez la douche',
+    level: QuestionLevel.important,
     type: QuestionType.yesNo,
     timing: QuestionTiming.pendant,
   ),
   QuestionTemplate(
-    id: kQBalconyTerrace,
-    section: 's7',
-    text: 'Balcon, terrasse ou jardin ?',
+    id: kQWaterQuality,
+    section: 's_water',
+    text: 'Qualité de l\'eau (goût, dureté)',
+    hint: '5 = excellente, 1 = très calcaire ou mauvais goût',
     level: QuestionLevel.nice,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.avant,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+  ),
+
+  // ── s7 : Espaces extérieurs (visite) ──────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQOutdoorSurface,
+    section: 's7',
+    text: 'Superficie de l\'espace extérieur',
+    hint: 'En m²',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.pendant,
   ),
   QuestionTemplate(
-    id: kQOutdoorQuality,
+    id: kQOutdoorNeighborExposure,
     section: 's7',
-    text: 'Qualité de l\'espace extérieur',
-    hint: '5 = grand et agréable, 1 = petit ou peu pratique',
+    text: 'Exposé aux voisins',
+    hint: '5 = très intimiste, 1 = très exposé',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+  ),
+  QuestionTemplate(
+    id: kQOutdoorSunExposure,
+    section: 's7',
+    text: 'Exposition au soleil',
+    hint: '5 = très ensoleillé, 1 = à l\'ombre toute la journée',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+  ),
+  QuestionTemplate(
+    id: kQOutdoorViewQuality,
+    section: 's7',
+    text: 'Qualité de la vue',
+    hint: '5 = vue dégagée et agréable, 1 = vue sur un mur ou rue',
     level: QuestionLevel.nice,
     type: QuestionType.score,
     timing: QuestionTiming.pendant,
     withPhoto: true,
   ),
 
-  // ── s8 : Aspects pratiques & Administration (10) ────────────────────────
+  // ── s8 : Aspects pratiques & Administration ───────────────────────────────
 
   QuestionTemplate(
     id: kQRentPrice,
     section: 's8',
-    text: 'Loyer mensuel (charges comprises ou non) ?',
-    hint: 'Précisez si CC ou HC',
+    text: 'Loyer mensuel',
+    hint: 'En €',
     level: QuestionLevel.critical,
+    type: QuestionType.text,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.location],
+  ),
+  QuestionTemplate(
+    id: kQChargesIncluded,
+    section: 's8',
+    text: 'Charges comprises ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.location],
+  ),
+  QuestionTemplate(
+    id: kQChargesAmount,
+    section: 's8',
+    text: 'Montant des charges',
+    hint: 'En € / mois',
+    level: QuestionLevel.important,
     type: QuestionType.text,
     timing: QuestionTiming.avant,
     appliesTo: [ProjectFilter.location],
@@ -621,24 +874,6 @@ const List<QuestionTemplate> kDefaultQuestions = [
     timing: QuestionTiming.avant,
   ),
   QuestionTemplate(
-    id: kQDepartureReason,
-    section: 's8',
-    text: 'Raison du départ du locataire / vendeur précédent ?',
-    hint: 'Révèle parfois des problèmes cachés',
-    level: QuestionLevel.important,
-    type: QuestionType.text,
-    timing: QuestionTiming.pendant,
-  ),
-  QuestionTemplate(
-    id: kQChargesIncluded,
-    section: 's8',
-    text: 'Les charges sont-elles incluses dans le loyer ?',
-    level: QuestionLevel.important,
-    type: QuestionType.yesNo,
-    timing: QuestionTiming.avant,
-    appliesTo: [ProjectFilter.location],
-  ),
-  QuestionTemplate(
     id: kQLandTax,
     section: 's8',
     text: 'Taxe foncière annuelle ?',
@@ -647,6 +882,15 @@ const List<QuestionTemplate> kDefaultQuestions = [
     type: QuestionType.text,
     timing: QuestionTiming.avant,
     appliesTo: [ProjectFilter.achat],
+  ),
+  QuestionTemplate(
+    id: kQDepartureReason,
+    section: 's8',
+    text: 'Raison du départ du locataire / vendeur précédent ?',
+    hint: 'Révèle parfois des problèmes cachés',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.pendant,
   ),
   QuestionTemplate(
     id: kQRenovationNeeded,
@@ -676,5 +920,3 @@ const List<QuestionTemplate> kDefaultQuestions = [
     timing: QuestionTiming.apres,
   ),
 ];
-
-// 62 questions total : s1×8 + s2×7 + s3×6 + s4×6 + s5×10 + s6×8 + s7×7 + s8×10

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/listing.dart';
 import '../../models/visit.dart';
 import '../../services/listing_storage_service.dart';
+import '../../services/project_service.dart';
 import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
@@ -27,8 +28,10 @@ class _VisitsScreenState extends State<VisitsScreen> {
   }
 
   Future<void> _load() async {
-    final visits = await VisitStorageService.load();
-    final listings = await ListingStorageService.load();
+    final projectId = await ProjectService.getActiveId() ?? '';
+    final visits = await VisitStorageService.load(projectId: projectId);
+    final listings =
+        await ListingStorageService.load(projectId: projectId);
     if (mounted) {
       setState(() {
         _visits = visits..sort((a, b) => b.visitedAt.compareTo(a.visitedAt));
@@ -48,7 +51,8 @@ class _VisitsScreenState extends State<VisitsScreen> {
               ? const EmptyState(
                   icon: Icons.door_front_door_outlined,
                   title: 'Aucune visite',
-                  subtitle: 'Démarre une visite depuis\nle détail d\'une annonce',
+                  subtitle:
+                      'Démarre une visite depuis\nle détail d\'une annonce',
                 )
               : ListView.separated(
                   padding: const EdgeInsets.all(DSpacing.md),
@@ -116,7 +120,6 @@ class _VisitTile extends StatelessWidget {
           padding: const EdgeInsets.all(DSpacing.md),
           child: Row(
             children: [
-              // Score circle
               Container(
                 width: 52,
                 height: 52,
@@ -175,8 +178,19 @@ class _VisitTile extends StatelessWidget {
 
   String _formatDate(DateTime dt) {
     final months = [
-      '', 'jan', 'fév', 'mar', 'avr', 'mai', 'jun',
-      'jul', 'aoû', 'sep', 'oct', 'nov', 'déc',
+      '',
+      'jan',
+      'fév',
+      'mar',
+      'avr',
+      'mai',
+      'jun',
+      'jul',
+      'aoû',
+      'sep',
+      'oct',
+      'nov',
+      'déc',
     ];
     return '${dt.day} ${months[dt.month]} ${dt.year}';
   }

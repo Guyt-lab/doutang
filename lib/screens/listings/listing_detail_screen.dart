@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../models/enums.dart';
 import '../../models/listing.dart';
 import '../../models/profile.dart';
 import '../../models/visit.dart';
 import '../../services/profile_storage_service.dart';
+import '../../services/project_service.dart';
 import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
@@ -32,9 +34,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
 
   Future<void> _loadVisit() async {
     if (_listing == null) return;
-    final profile = await ProfileStorageService.load();
+    final projectId = await ProjectService.getActiveId() ?? '';
+    final profile = await ProfileStorageService.load(projectId: projectId);
     final owner = profile?.owner ?? 'Moi';
-    final visits = await VisitStorageService.load();
+    final visits = await VisitStorageService.load(projectId: projectId);
     final found = visits.where(
       (v) => v.listingId == _listing!.id && v.owner == owner,
     );
@@ -78,7 +81,42 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(DSpacing.md),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (listing != null &&
+                        (listing.propertyKind != null ||
+                            listing.transactionKind != null)) ...[
+                      Wrap(
+                        spacing: DSpacing.sm,
+                        children: [
+                          if (listing.propertyKind != null)
+                            _KindBadge(
+                              label: listing.propertyKind ==
+                                      ListingPropertyKind.appartement
+                                  ? 'Appartement'
+                                  : 'Maison',
+                              icon: listing.propertyKind ==
+                                      ListingPropertyKind.appartement
+                                  ? Icons.apartment_outlined
+                                  : Icons.cottage_outlined,
+                            ),
+                          if (listing.transactionKind != null)
+                            _KindBadge(
+                              label: listing.transactionKind ==
+                                      ListingTransactionKind.achat
+                                  ? 'Achat'
+                                  : 'Location',
+                              icon: listing.transactionKind ==
+                                      ListingTransactionKind.achat
+                                  ? Icons.sell_outlined
+                                  : Icons.key_outlined,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: DSpacing.sm),
+                      const Divider(height: 0),
+                      const SizedBox(height: DSpacing.sm),
+                    ],
                     _InfoRow(
                         icon: Icons.euro,
                         label: 'Prix',
@@ -103,6 +141,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: DSpacing.md),
+
+            // Contact
+            _buildContactCard(listing),
             const SizedBox(height: DSpacing.md),
 
             // Score matching
@@ -133,6 +175,65 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
             else
               _buildStartVisitButton(listing),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactCard(Listing? listing) {
+    final contact = listing?.contact;
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: listing == null
+            ? null
+            : () => Navigator.pushNamed(
+                  context,
+                  AppRoutes.listingContact,
+                  arguments: listing,
+                ).then((updated) {
+                  if (updated is Listing && mounted) {
+                    setState(() => _listing = updated);
+                  }
+                }),
+        child: Padding(
+          padding: const EdgeInsets.all(DSpacing.md),
+          child: Row(
+            children: [
+              Icon(
+                contact?.isAgency == true
+                    ? Icons.business_outlined
+                    : Icons.person_outline,
+                color: DoutangTheme.primary,
+              ),
+              const SizedBox(width: DSpacing.sm),
+              Expanded(
+                child: contact == null || contact.isEmpty
+                    ? Text(
+                        'Ajouter un contact',
+                        style: TextStyle(color: DoutangTheme.textSecondary),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (contact.isAgency && contact.agencyName != null)
+                            Text(contact.agencyName!,
+                                style: Theme.of(context).textTheme.titleSmall),
+                          if (contact.contactName != null)
+                            Text(contact.contactName!,
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          if (contact.phone != null)
+                            Text(contact.phone!,
+                                style: TextStyle(
+                                    color: DoutangTheme.textSecondary,
+                                    fontSize: 13)),
+                        ],
+                      ),
+              ),
+              Icon(Icons.edit_outlined,
+                  size: 18, color: DoutangTheme.textSecondary),
+            ],
+          ),
         ),
       ),
     );
@@ -182,11 +283,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
   }
 
   Future<void> _startVisit(Listing listing, {Visit? existingVisit}) async {
-    final profile = await ProfileStorageService.load();
+    final projectId = await ProjectService.getActiveId() ?? '';
+    final profile = await ProfileStorageService.load(projectId: projectId);
     if (!mounted) return;
     await Navigator.pushNamed(
       context,
-      AppRoutes.visitQuestionnaire,
+      AppRoutes.visitStart,
       arguments: {
         'listing': listing,
         'profile': profile ?? UserProfile(owner: 'Moi'),
@@ -194,6 +296,36 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       },
     );
     await _loadVisit();
+  }
+}
+
+class _KindBadge extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  const _KindBadge({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: DoutangTheme.primarySurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: DoutangTheme.primary, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: DoutangTheme.primary),
+          const SizedBox(width: 4),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: DoutangTheme.primary)),
+        ],
+      ),
+    );
   }
 }
 

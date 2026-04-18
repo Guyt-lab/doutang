@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../models/enums.dart';
 import '../../models/listing.dart';
 import '../../services/listing_parser_service.dart';
 import '../../services/listing_storage_service.dart';
 import '../../services/profile_storage_service.dart';
+import '../../services/project_service.dart';
 import '../../theme/doutang_theme.dart';
 
 class AddListingScreen extends StatefulWidget {
@@ -21,6 +23,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final _priceController = TextEditingController();
   final _surfaceController = TextEditingController();
   final _addressController = TextEditingController();
+
+  ListingPropertyKind? _propertyKind;
+  ListingTransactionKind? _transactionKind;
 
   bool _isParsing = false;
   bool _isSaving = false;
@@ -50,6 +55,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
           _surfaceController.text = arg.surface!.toInt().toString();
         }
         _addressController.text = arg.address ?? '';
+        _propertyKind = arg.propertyKind;
+        _transactionKind = arg.transactionKind;
         _showManual = true;
       });
     }
@@ -115,9 +122,11 @@ class _AddListingScreenState extends State<AddListingScreen> {
         ? null
         : _urlController.text.trim();
 
+    final projectId = await ProjectService.getActiveId() ?? '';
+
     // Détection de doublons (mode ajout uniquement, et seulement si URL fournie)
     if (!_isEditMode && url != null) {
-      final existing = await ListingStorageService.load();
+      final existing = await ListingStorageService.load(projectId: projectId);
       Listing? dupe;
       for (final l in existing) {
         if (l.url == url) {
@@ -159,7 +168,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
     setState(() => _isSaving = true);
 
-    final profile = await ProfileStorageService.load();
+    final profile = await ProfileStorageService.load(projectId: projectId);
     final owner = _editingListing?.addedBy ?? profile?.owner ?? 'Moi';
 
     final listing = Listing(
@@ -181,18 +190,38 @@ class _AddListingScreenState extends State<AddListingScreen> {
       notes: _editingListing?.notes,
       rooms: _editingListing?.rooms,
       facts: _editingListing?.facts,
+      contact: _editingListing?.contact,
+      propertyKind: _propertyKind,
+      transactionKind: _transactionKind,
     );
 
     if (_isEditMode) {
-      await ListingStorageService.update(listing);
+      await ListingStorageService.update(listing, projectId: projectId);
     } else {
-      await ListingStorageService.add(listing);
+      await ListingStorageService.add(listing, projectId: projectId);
     }
 
     if (mounted) {
       setState(() => _isSaving = false);
       Navigator.pop(context);
     }
+  }
+
+  Widget _buildSegmentRow({
+    required String label,
+    required List<Widget> children,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(label,
+              style: const TextStyle(
+                  fontSize: 13, color: DoutangTheme.textSecondary)),
+        ),
+        Wrap(spacing: DSpacing.sm, children: children),
+      ],
+    );
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -289,6 +318,56 @@ class _AddListingScreenState extends State<AddListingScreen> {
                       v == null || v.trim().isEmpty ? 'Requis' : null,
                 ),
                 const SizedBox(height: DSpacing.md),
+                // ── Type de bien ──
+                _buildSegmentRow(
+                  label: 'Type de bien',
+                  children: [
+                    _KindChip(
+                      label: 'Appartement',
+                      icon: Icons.apartment_outlined,
+                      selected: _propertyKind == ListingPropertyKind.appartement,
+                      onTap: () => setState(() => _propertyKind =
+                          _propertyKind == ListingPropertyKind.appartement
+                              ? null
+                              : ListingPropertyKind.appartement),
+                    ),
+                    _KindChip(
+                      label: 'Maison',
+                      icon: Icons.cottage_outlined,
+                      selected: _propertyKind == ListingPropertyKind.maison,
+                      onTap: () => setState(() => _propertyKind =
+                          _propertyKind == ListingPropertyKind.maison
+                              ? null
+                              : ListingPropertyKind.maison),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DSpacing.sm),
+                // ── Type de transaction ──
+                _buildSegmentRow(
+                  label: 'Transaction',
+                  children: [
+                    _KindChip(
+                      label: 'Location',
+                      icon: Icons.key_outlined,
+                      selected: _transactionKind == ListingTransactionKind.location,
+                      onTap: () => setState(() => _transactionKind =
+                          _transactionKind == ListingTransactionKind.location
+                              ? null
+                              : ListingTransactionKind.location),
+                    ),
+                    _KindChip(
+                      label: 'Achat',
+                      icon: Icons.sell_outlined,
+                      selected: _transactionKind == ListingTransactionKind.achat,
+                      onTap: () => setState(() => _transactionKind =
+                          _transactionKind == ListingTransactionKind.achat
+                              ? null
+                              : ListingTransactionKind.achat),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DSpacing.md),
                 Row(
                   children: [
                     Expanded(
@@ -358,3 +437,58 @@ class _AddListingScreenState extends State<AddListingScreen> {
 }
 
 enum _DupeChoice { viewExisting, addAnyway, cancel }
+
+class _KindChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _KindChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? DoutangTheme.primarySurface : DoutangTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? DoutangTheme.primary : DoutangTheme.border,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 16,
+                color: selected
+                    ? DoutangTheme.primary
+                    : DoutangTheme.textSecondary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight:
+                    selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected
+                    ? DoutangTheme.primary
+                    : DoutangTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

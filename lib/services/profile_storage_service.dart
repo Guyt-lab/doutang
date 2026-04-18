@@ -5,31 +5,37 @@ import 'package:path_provider/path_provider.dart';
 
 import '../models/profile.dart';
 
-/// Persiste le [UserProfile] local dans un fichier JSON sur l'appareil.
-///
-/// Le paramètre [basePath] est réservé aux tests : il permet d'injecter
-/// un répertoire temporaire sans dépendance à la plateforme.
 class ProfileStorageService {
   ProfileStorageService._();
 
-  static const _filename = 'profile.json';
+  static const _defaultFilename = 'profile.json';
 
-  static Future<File> _file({String? basePath}) async {
+  static String _filename(String projectId) =>
+      projectId.isEmpty ? _defaultFilename : '${projectId}_profile.json';
+
+  static Future<File> _file({String? basePath, String projectId = ''}) async {
     final dir = basePath != null
         ? Directory(basePath)
         : await getApplicationDocumentsDirectory();
-    return File('${dir.path}/$_filename');
+    return File('${dir.path}/${_filename(projectId)}');
   }
 
-  static Future<void> save(UserProfile profile, {String? basePath}) async {
-    final file = await _file(basePath: basePath);
+  static Future<void> save(
+    UserProfile profile, {
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final file = await _file(basePath: basePath, projectId: projectId);
     await file.writeAsString(
       const JsonEncoder.withIndent('  ').convert(profile.toJson()),
     );
   }
 
-  static Future<UserProfile?> load({String? basePath}) async {
-    final file = await _file(basePath: basePath);
+  static Future<UserProfile?> load({
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final file = await _file(basePath: basePath, projectId: projectId);
     if (!file.existsSync()) return null;
     final content = await file.readAsString();
     return UserProfile.fromJson(
@@ -37,8 +43,11 @@ class ProfileStorageService {
     );
   }
 
-  static Future<void> delete({String? basePath}) async {
-    final file = await _file(basePath: basePath);
+  static Future<void> delete({
+    String? basePath,
+    String projectId = '',
+  }) async {
+    final file = await _file(basePath: basePath, projectId: projectId);
     if (file.existsSync()) await file.delete();
   }
 }

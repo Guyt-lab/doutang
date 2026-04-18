@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import 'enums.dart';
+import 'listing_contact.dart';
 import 'listing_facts.dart';
 
 const _uuid = Uuid();
@@ -21,6 +23,15 @@ class Listing {
   /// Caractéristiques factuelles du bien (owner-agnostic, remplies progressivement).
   final ListingFacts facts;
 
+  /// Contact agence ou particulier (optionnel).
+  final ListingContact? contact;
+
+  /// Type de bien : appartement ou maison.
+  final ListingPropertyKind? propertyKind;
+
+  /// Type de transaction : achat ou location.
+  final ListingTransactionKind? transactionKind;
+
   Listing({
     String? id,
     this.url,
@@ -35,6 +46,9 @@ class Listing {
     DateTime? addedAt,
     DateTime? updatedAt,
     ListingFacts? facts,
+    this.contact,
+    this.propertyKind,
+    this.transactionKind,
   })  : id = id ?? _uuid.v4(),
         status = status ?? ListingStatus.aContacter,
         notes = notes ?? '',
@@ -52,6 +66,12 @@ class Listing {
     ListingStatus? status,
     String? notes,
     ListingFacts? facts,
+    ListingContact? contact,
+    bool clearContact = false,
+    ListingPropertyKind? propertyKind,
+    bool clearPropertyKind = false,
+    ListingTransactionKind? transactionKind,
+    bool clearTransactionKind = false,
   }) {
     return Listing(
       id: id,
@@ -67,6 +87,9 @@ class Listing {
       addedAt: addedAt,
       updatedAt: DateTime.now(),
       facts: facts ?? this.facts,
+      contact: clearContact ? null : (contact ?? this.contact),
+      propertyKind: clearPropertyKind ? null : (propertyKind ?? this.propertyKind),
+      transactionKind: clearTransactionKind ? null : (transactionKind ?? this.transactionKind),
     );
   }
 
@@ -84,6 +107,9 @@ class Listing {
         'added_at': addedAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
         'facts': facts.toJson(),
+        'contact': contact?.toJson(),
+        'property_kind': propertyKind?.name,
+        'transaction_kind': transactionKind?.name,
       };
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
@@ -105,6 +131,13 @@ class Listing {
         facts: json['facts'] != null
             ? ListingFacts.fromJson(json['facts'] as Map<String, dynamic>)
             : const ListingFacts(),
+        contact: json['contact'] != null
+            ? ListingContact.fromJson(json['contact'] as Map<String, dynamic>)
+            : null,
+        propertyKind: enumFromJson(
+            ListingPropertyKind.values, json['property_kind'] as String?),
+        transactionKind: enumFromJson(
+            ListingTransactionKind.values, json['transaction_kind'] as String?),
       );
 }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../models/listing.dart';
-import '../../models/visit.dart';
 import '../../services/listing_storage_service.dart';
+import '../../services/project_service.dart';
 import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
@@ -21,6 +21,8 @@ class _ListingsScreenState extends State<ListingsScreen> {
   Map<String, double> _visitScoreByListingId = {};
   ListingStatus? _filterStatus;
   bool _isLoading = true;
+  String _projectId = '';
+  String _projectName = 'Doutang';
 
   @override
   void initState() {
@@ -29,10 +31,14 @@ class _ListingsScreenState extends State<ListingsScreen> {
   }
 
   Future<void> _loadListings() async {
-    final listings = await ListingStorageService.load();
-    final visits = await VisitStorageService.load();
+    final project = await ProjectService.getActive();
+    final projectId = project?.id ?? '';
+    final listings = await ListingStorageService.load(projectId: projectId);
+    final visits = await VisitStorageService.load(projectId: projectId);
     if (mounted) {
       setState(() {
+        _projectId = projectId;
+        _projectName = project?.name ?? 'Doutang';
         _listings = listings;
         _visitScoreByListingId = {
           for (final v in visits) v.listingId: v.score,
@@ -59,8 +65,17 @@ class _ListingsScreenState extends State<ListingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doutang'),
+        title: Text(_projectName),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.swap_horiz_outlined),
+            tooltip: 'Changer de projet',
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.projects,
+              arguments: {'fromSwitch': true},
+            ).then((_) => _loadListings()),
+          ),
           IconButton(
             icon: const Icon(Icons.ios_share_outlined),
             tooltip: 'Partager / Importer',
@@ -118,7 +133,8 @@ class _ListingsScreenState extends State<ListingsScreen> {
                                   ),
                                   onDismissed: (_) async {
                                     await ListingStorageService.deleteById(
-                                        listing.id);
+                                        listing.id,
+                                        projectId: _projectId);
                                     _loadListings();
                                   },
                                   child: ListingCard(
@@ -170,7 +186,6 @@ class _ListingsScreenState extends State<ListingsScreen> {
               subtitle: const Text('Envoie-le à ton/ta partenaire'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: FileService.export()
               },
             ),
             ListTile(
@@ -179,7 +194,6 @@ class _ListingsScreenState extends State<ListingsScreen> {
               subtitle: const Text('Fusionne avec tes données'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: FileService.import() + MergeService.merge()
               },
             ),
           ],

@@ -18,6 +18,9 @@ class QuestionTemplate {
   final bool isCustom;
   final bool isEnabled;
 
+  /// Options pour les questions de type [QuestionType.multiChoice].
+  final List<String> options;
+
   const QuestionTemplate({
     required this.id,
     required this.section,
@@ -30,7 +33,35 @@ class QuestionTemplate {
     this.withPhoto = false,
     this.isCustom = false,
     this.isEnabled = true,
+    this.options = const [],
   });
+
+  QuestionTemplate copyWith({
+    String? section,
+    String? text,
+    String? hint,
+    QuestionLevel? level,
+    QuestionType? type,
+    QuestionTiming? timing,
+    List<ProjectFilter>? appliesTo,
+    bool? withPhoto,
+    bool? isEnabled,
+    List<String>? options,
+  }) =>
+      QuestionTemplate(
+        id: id,
+        section: section ?? this.section,
+        text: text ?? this.text,
+        hint: hint ?? this.hint,
+        level: level ?? this.level,
+        type: type ?? this.type,
+        timing: timing ?? this.timing,
+        appliesTo: appliesTo ?? this.appliesTo,
+        withPhoto: withPhoto ?? this.withPhoto,
+        isCustom: isCustom,
+        isEnabled: isEnabled ?? this.isEnabled,
+        options: options ?? this.options,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -44,6 +75,7 @@ class QuestionTemplate {
         'with_photo': withPhoto,
         'is_custom': isCustom,
         'is_enabled': isEnabled,
+        'options': options,
       };
 
   factory QuestionTemplate.fromJson(Map<String, dynamic> json) =>
@@ -69,13 +101,21 @@ class QuestionTemplate {
         withPhoto: json['with_photo'] as bool? ?? false,
         isCustom: json['is_custom'] as bool? ?? false,
         isEnabled: json['is_enabled'] as bool? ?? true,
+        options: List<String>.from(json['options'] as List? ?? []),
       );
 }
 
 /// Configuration personnalisée du questionnaire pour un [UserProfile].
 class QuestionnaireConfig {
-  /// IDs des questions activées. Si vide → toutes les questions sont activées.
-  final Set<String> enabledQuestionIds;
+  /// IDs des questions désactivées (liste noire). Vide = tout activé.
+  final Set<String> disabledQuestionIds;
+
+  /// Questions personnalisées créées par l'utilisateur.
+  final List<QuestionTemplate> customQuestions;
+
+  /// Surcharge des tags [ProjectFilter] par question (ID → liste de filtres).
+  /// Permet de changer maison/appartement/achat/location sur n'importe quelle question.
+  final Map<String, List<ProjectFilter>> questionTagOverrides;
 
   /// Poids de chaque composante dans le score final (doit sommer à 1.0).
   /// Clés : 'eval', 'matching', 'feeling'.
@@ -90,8 +130,13 @@ class QuestionnaireConfig {
   /// Score acoustique ≤ ce seuil déclenche un bloqueur (1-5).
   final int phonicsBlockerThreshold;
 
+  // Conservé pour rétrocompat lecture (ignoré à l'écriture).
+  final Set<String> enabledQuestionIds;
+
   const QuestionnaireConfig({
-    this.enabledQuestionIds = const {},
+    this.disabledQuestionIds = const {},
+    this.customQuestions = const [],
+    this.questionTagOverrides = const {},
     this.scoreWeights = const {
       'eval': 0.5,
       'matching': 0.3,
@@ -100,30 +145,41 @@ class QuestionnaireConfig {
     this.transportMaxMinutes = 15,
     this.humidityBlocker = true,
     this.phonicsBlockerThreshold = 1,
+    this.enabledQuestionIds = const {},
   });
 
   /// Configuration par défaut (toutes questions actives, poids standards).
   static const QuestionnaireConfig defaults = QuestionnaireConfig();
 
   QuestionnaireConfig copyWith({
-    Set<String>? enabledQuestionIds,
+    Set<String>? disabledQuestionIds,
+    List<QuestionTemplate>? customQuestions,
+    Map<String, List<ProjectFilter>>? questionTagOverrides,
     Map<String, double>? scoreWeights,
     int? transportMaxMinutes,
     bool? humidityBlocker,
     int? phonicsBlockerThreshold,
   }) =>
       QuestionnaireConfig(
-        enabledQuestionIds: enabledQuestionIds ?? this.enabledQuestionIds,
+        disabledQuestionIds: disabledQuestionIds ?? this.disabledQuestionIds,
+        customQuestions: customQuestions ?? this.customQuestions,
+        questionTagOverrides: questionTagOverrides ?? this.questionTagOverrides,
         scoreWeights: scoreWeights ?? this.scoreWeights,
-        transportMaxMinutes:
-            transportMaxMinutes ?? this.transportMaxMinutes,
+        transportMaxMinutes: transportMaxMinutes ?? this.transportMaxMinutes,
         humidityBlocker: humidityBlocker ?? this.humidityBlocker,
         phonicsBlockerThreshold:
             phonicsBlockerThreshold ?? this.phonicsBlockerThreshold,
+        enabledQuestionIds: enabledQuestionIds,
       );
 
   Map<String, dynamic> toJson() => {
-        'enabled_question_ids': enabledQuestionIds.toList(),
+        'disabled_question_ids': disabledQuestionIds.toList(),
+        'custom_questions':
+            customQuestions.map((q) => q.toJson()).toList(),
+        'question_tag_overrides': questionTagOverrides.map(
+          (id, filters) =>
+              MapEntry(id, filters.map((f) => f.name).toList()),
+        ),
         'score_weights': scoreWeights,
         'transport_max_minutes': transportMaxMinutes,
         'humidity_blocker': humidityBlocker,
@@ -132,9 +188,27 @@ class QuestionnaireConfig {
 
   factory QuestionnaireConfig.fromJson(Map<String, dynamic> json) =>
       QuestionnaireConfig(
+        disabledQuestionIds: Set<String>.from(
+          json['disabled_question_ids'] as List? ?? [],
+        ),
         enabledQuestionIds: Set<String>.from(
           json['enabled_question_ids'] as List? ?? [],
         ),
+        customQuestions: (json['custom_questions'] as List? ?? [])
+            .map((e) =>
+                QuestionTemplate.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        questionTagOverrides: (json['question_tag_overrides']
+                    as Map<String, dynamic>? ??
+                {})
+            .map((id, tags) => MapEntry(
+                  id,
+                  (tags as List)
+                      .map((t) =>
+                          enumFromJson(ProjectFilter.values, t as String?) ??
+                          ProjectFilter.location)
+                      .toList(),
+                )),
         scoreWeights: Map<String, double>.from(
           (json['score_weights'] as Map<String, dynamic>? ??
                   {'eval': 0.5, 'matching': 0.3, 'feeling': 0.2})

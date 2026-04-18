@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../data/default_questions.dart';
@@ -7,10 +9,13 @@ import '../../models/profile.dart';
 import '../../models/question_template.dart';
 import '../../models/renovation_answers.dart';
 import '../../models/visit.dart';
+import '../../services/project_service.dart';
 import '../../services/score_service.dart';
 import '../../services/visit_storage_service.dart';
 import '../../theme/app_routes.dart';
 import '../../theme/doutang_theme.dart';
+import '../../models/exterior_space.dart';
+import '../../widgets/exterior_spaces_card.dart';
 import '../../widgets/question_card.dart';
 import '../../widgets/renovation_card.dart';
 
@@ -31,11 +36,15 @@ class VisitQuestionnaireScreen extends StatefulWidget {
   /// Visite existante à ré-éditer. Null = nouvelle visite.
   final Visit? existingVisit;
 
+  /// Date/heure choisie dans [VisitStartScreen]. Null = maintenant.
+  final DateTime? visitedAt;
+
   const VisitQuestionnaireScreen({
     super.key,
     required this.listing,
     required this.profile,
     this.existingVisit,
+    this.visitedAt,
   });
 
   @override
@@ -55,6 +64,9 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
 
   /// Évaluation travaux (projet achat uniquement).
   RenovationAnswers _renovation = const RenovationAnswers();
+
+  /// Espaces extérieurs saisis dans l'onglet Avant.
+  List<ExteriorSpace> _exteriorSpaces = [];
 
   bool _isSaving = false;
 
@@ -87,20 +99,41 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
   // ── Filtrage des questions ─────────────────────────────────────────────────
 
   void _filterQuestions() {
-    final enabledIds =
-        widget.profile.questionnaireConfig.enabledQuestionIds;
+    final config = widget.profile.questionnaireConfig;
+
+    // Effective appliesTo for a question: override if present, else template default.
+    List<ProjectFilter> effectiveTags(QuestionTemplate q) =>
+        config.questionTagOverrides[q.id] ?? q.appliesTo;
 
     bool applies(QuestionTemplate q) {
-      if (q.appliesTo.isNotEmpty) {
-        final needed =
-            _isAchat ? ProjectFilter.achat : ProjectFilter.location;
-        if (!q.appliesTo.contains(needed)) return false;
+      if (config.disabledQuestionIds.contains(q.id)) return false;
+
+      final tags = effectiveTags(q);
+      if (tags.isNotEmpty) {
+        final txFilter = _isAchat ? ProjectFilter.achat : ProjectFilter.location;
+        final propKind = widget.listing.propertyKind;
+
+        final hasTxTag = tags.any(
+            (f) => f == ProjectFilter.achat || f == ProjectFilter.location);
+        if (hasTxTag && !tags.contains(txFilter)) return false;
+
+        final hasPropTag = tags.any(
+            (f) => f == ProjectFilter.appartement || f == ProjectFilter.maison);
+        if (hasPropTag) {
+          final propFilter = propKind == ListingPropertyKind.maison
+              ? ProjectFilter.maison
+              : ProjectFilter.appartement;
+          if (!tags.contains(propFilter)) return false;
+        }
       }
-      if (enabledIds.isNotEmpty && !enabledIds.contains(q.id)) return false;
       return true;
     }
 
-    final active = kDefaultQuestions.where(applies).toList();
+    final allQuestions = [
+      ...kDefaultQuestions,
+      ...config.customQuestions,
+    ];
+    final active = allQuestions.where(applies).toList();
 
     _questionsAvant =
         active.where((q) => q.timing == QuestionTiming.avant).toList();
@@ -128,8 +161,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
 
     // s1
     put(kQTransportMinutes, a.transportScore);
-    putStr(kQTransportType, a.transportType);
-    putStr(kQMobilityServices, a.mobilityService);
+    _answers[kQTransportType] = _decodeMultiChoice(a.transportType);
+    _answers[kQMobilityServices] = _decodeMultiChoice(a.mobilityService);
     put(kQNoiseStreet, a.noiseScore ?? a.calme);
     put(kQNeighborhoodVibe, a.neighborhoodScore ?? a.quartier);
     put(kQSafetyFeeling, a.safetyScore);
@@ -142,6 +175,15 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     put(kQCave, a.caveOk ?? a.cave);
     put(kQBikeStorage, a.bikeStorage);
     put(kQSecureDoor, a.secureDoorOk ?? a.digicode);
+    put(kQParking, a.parking);
+    put(kQBuildingConcierge, a.buildingConcierge);
+    put(kQCaveAccess, a.caveAccess);
+    put(kQCaveDoor, a.caveDoor);
+    put(kQCaveDry, a.caveDry);
+    put(kQBikeStorageSecured, a.bikeStorageSecured);
+    put(kQBikeStorageSpace, a.bikeStorageSpace);
+    put(kQTrashAccess, a.trashAccess);
+    put(kQDisabledAccess, a.disabledAccess);
     // s3
     put(kQLuminosityLiving, a.luminosityScore ?? a.luminosite);
     putStr(kQVisitTime, a.visitTime);
@@ -154,6 +196,16 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     put(kQHumidityDetected, a.humidityDetected);
     put(kQHeatingDistribution, a.heatingDistributionScore ?? a.chauffage);
     put(kQThermalInsulation, a.thermalInsulationScore);
+    // s_living
+    put(kQRadiatorLiving, a.radiatorLiving);
+    // s_bathroom
+    put(kQRadiatorBathroom, a.radiatorBathroom);
+    // s_bedrooms
+    put(kQRadiatorBedroom, a.radiatorBedroom);
+    // s_heating
+    putStr(kQHeatingSystem, a.heatingSystem);
+    // s2 elevator size
+    _answers[kQElevatorSize] = _decodeMultiChoice(a.elevatorSize);
     // s5
     put(kQGeneralState, a.etatGeneral);
     put(kQElectricPanel, a.electricPanelOk);
@@ -169,18 +221,35 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     put(kQKitchenHood, a.hoodOk);
     put(kQWashingMachineSpace, a.washingMachineSpace);
     put(kQFridgeSpace, a.fridgeSpaceOk);
+    put(kQDishwasherSpace, a.dishwasherSpace);
+    put(kQTrashSpace, a.trashSpace);
+    put(kQVmcKitchen, a.vmcKitchen);
+    _answers[kQKitchenOpenClosed] = _decodeMultiChoice(a.kitchenOpenClosed);
     put(kQBathroomSize, a.salleDeBain);
     put(kQTowelRadiator, a.towelRadiatorSdb);
+    _answers[kQBathroomFeatures] = _decodeMultiChoice(a.bathroomFeatures);
     // s7
     put(kQStorageSpace, a.rangements);
-    put(kQBalconyTerrace, a.balconOuTerrasse);
+    putStr(kQOutdoorSurface, a.outdoorSurface);
+    put(kQOutdoorNeighborExposure, a.outdoorNeighborExposure);
+    put(kQOutdoorSunExposure, a.outdoorSunExposure);
+    put(kQOutdoorViewQuality, a.outdoorViewQuality);
     // s8
     putStr(kQDepartureReason, a.departureReason);
+    putStr(kQChargesAmount, a.chargesAmount);
     putStr(kQCoupDeCoeur, a.coupDeCoeur);
     putStr(kQPointRedhibitoire, a.pointRedhibitoire);
 
     _feeling = v.feeling;
     if (a.renovation != null) _renovation = a.renovation!;
+    if (a.exteriorSpaces != null) {
+      try {
+        final decoded = jsonDecode(a.exteriorSpaces!) as List;
+        _exteriorSpaces = decoded
+            .map((e) => ExteriorSpace.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (_) {}
+    }
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -190,9 +259,15 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     's2': 'Immeuble & Parties communes',
     's3': 'Luminosité & Vue',
     's4': 'Acoustique & Isolation',
-    's5': 'État général & Équipements',
-    's6': 'Cuisine & Salle de bain',
-    's7': 'Chambres & Espaces de vie',
+    's5': 'État général',
+    's_living': 'Pièce à vivre / Salon',
+    's_kitchen': 'Cuisine',
+    's_bathroom': 'Salle de bain',
+    's_bedrooms': 'Chambres',
+    's_elec': 'Électricité',
+    's_heating': 'Chauffage',
+    's_water': 'Eau',
+    's7': 'Espaces extérieurs',
     's8': 'Aspects pratiques',
   };
 
@@ -202,8 +277,14 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     's3': Icons.wb_sunny_outlined,
     's4': Icons.hearing_outlined,
     's5': Icons.build_outlined,
-    's6': Icons.kitchen_outlined,
-    's7': Icons.bed_outlined,
+    's_living': Icons.weekend_outlined,
+    's_kitchen': Icons.kitchen_outlined,
+    's_bathroom': Icons.bathtub_outlined,
+    's_bedrooms': Icons.bed_outlined,
+    's_elec': Icons.electrical_services_outlined,
+    's_heating': Icons.thermostat_outlined,
+    's_water': Icons.water_drop_outlined,
+    's7': Icons.yard_outlined,
     's8': Icons.receipt_long_outlined,
   };
 
@@ -219,10 +300,45 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
   }
 
   int _answeredIn(List<QuestionTemplate> questions) =>
-      questions.where((q) => _answers[q.id] != null).length;
+      questions.where((q) {
+        final v = _answers[q.id];
+        if (v == null) return false;
+        if (v is List) return v.isNotEmpty;
+        return true;
+      }).length;
 
   void _setAnswer(String id, dynamic value) =>
       setState(() => _answers[id] = value);
+
+  /// Décode un champ multiChoice depuis sa représentation JSON string.
+  /// Rétrocompat : si la valeur n'est pas du JSON valide, la traite comme texte brut.
+  static List<String>? _decodeMultiChoice(String? json) {
+    if (json == null || json.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(json);
+      if (decoded is List) return List<String>.from(decoded);
+    } catch (_) {}
+    return [json];
+  }
+
+  /// Retourne l'heure de visite au format "HH:mm" depuis [widget.visitedAt]
+  /// ou la valeur texte saisie manuellement (rétrocompat).
+  String? _visitTimeString() {
+    final dt = widget.visitedAt ?? widget.existingVisit?.visitedAt;
+    if (dt != null) {
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+    return null;
+  }
+
+  /// Encode une valeur multiChoice (List) en JSON string pour stockage.
+  String? _encodeMultiChoice(String key) {
+    final v = _answers[key];
+    if (v == null) return null;
+    if (v is List<String>) return jsonEncode(v);
+    if (v is String) return v;
+    return null;
+  }
 
   // ── Construction du VisitAnswers ───────────────────────────────────────────
 
@@ -272,8 +388,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
       pointRedhibitoire: strQ(kQPointRedhibitoire),
       // ── v2 : Transports ──
       transportScore: intQ(kQTransportMinutes),
-      transportType: strQ(kQTransportType),
-      mobilityService: strQ(kQMobilityServices),
+      transportType: _encodeMultiChoice(kQTransportType),
+      mobilityService: _encodeMultiChoice(kQMobilityServices),
       // ── v2 : Quartier ──
       noiseScore: intQ(kQNoiseStreet),
       neighborhoodScore: intQ(kQNeighborhoodVibe),
@@ -285,9 +401,19 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
       caveOk: boolQ(kQCave),
       secureDoorOk: boolQ(kQSecureDoor),
       bikeStorage: boolQ(kQBikeStorage),
+      parking: boolQ(kQParking),
+      buildingConcierge: boolQ(kQBuildingConcierge),
+      elevatorSize: _encodeMultiChoice(kQElevatorSize),
+      caveAccess: boolQ(kQCaveAccess),
+      caveDoor: boolQ(kQCaveDoor),
+      caveDry: boolQ(kQCaveDry),
+      bikeStorageSecured: boolQ(kQBikeStorageSecured),
+      bikeStorageSpace: boolQ(kQBikeStorageSpace),
+      trashAccess: intQ(kQTrashAccess),
+      disabledAccess: boolQ(kQDisabledAccess),
       // ── v2 : Luminosité ──
       luminosityScore: intQ(kQLuminosityLiving),
-      visitTime: strQ(kQVisitTime),
+      visitTime: _visitTimeString(),
       visAVisScore: intQ(kQVisAVis),
       // ── v2 : Acoustique ──
       phonicsScore: phonicsScore(),
@@ -307,14 +433,34 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
       fridgeSpaceOk: boolQ(kQFridgeSpace),
       hoodOk: boolQ(kQKitchenHood),
       washingMachineSpace: boolQ(kQWashingMachineSpace),
+      dishwasherSpace: boolQ(kQDishwasherSpace),
+      trashSpace: boolQ(kQTrashSpace),
+      kitchenOpenClosed: _encodeMultiChoice(kQKitchenOpenClosed),
+      vmcKitchen: boolQ(kQVmcKitchen),
       towelRadiatorSdb: boolQ(kQTowelRadiator),
+      bathroomFeatures: _encodeMultiChoice(kQBathroomFeatures),
+      // ── v2 : Radiateurs & Chauffage ──
+      radiatorLiving: boolQ(kQRadiatorLiving),
+      radiatorBathroom: boolQ(kQRadiatorBathroom),
+      radiatorBedroom: boolQ(kQRadiatorBedroom),
+      heatingSystem: strQ(kQHeatingSystem),
       // ── v2 : Admin ──
       departureReason: strQ(kQDepartureReason),
       agencyFees: parseAmount(strQ(kQAgencyFees)),
       guaranteeDeposit: parseAmount(strQ(kQDeposit)),
       landTax: parseAmount(strQ(kQLandTax)),
+      chargesAmount: strQ(kQChargesAmount),
       // ── v2 : Rénovation (achat uniquement) ──
       renovation: _isAchat ? _renovation : null,
+      // ── v2 : Espaces extérieurs (visite) ──
+      outdoorSurface: strQ(kQOutdoorSurface),
+      outdoorNeighborExposure: intQ(kQOutdoorNeighborExposure),
+      outdoorSunExposure: intQ(kQOutdoorSunExposure),
+      outdoorViewQuality: intQ(kQOutdoorViewQuality),
+      // ── v2 : Espaces extérieurs (avant) ──
+      exteriorSpaces: _exteriorSpaces.isEmpty
+          ? null
+          : jsonEncode(_exteriorSpaces.map((e) => e.toJson()).toList()),
     );
   }
 
@@ -329,7 +475,7 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
         owner: widget.profile.owner,
         answers: answers,
         feeling: _feeling,
-        visitedAt: widget.existingVisit?.visitedAt,
+        visitedAt: widget.visitedAt ?? widget.existingVisit?.visitedAt,
       );
 
       final score = ScoreService.calculateFinalScore(
@@ -343,7 +489,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
       if (!mounted) return;
 
       if (widget.existingVisit != null) {
-        await VisitStorageService.add(visitWithScore);
+        final projectId = await ProjectService.getActiveId() ?? '';
+        await VisitStorageService.add(visitWithScore, projectId: projectId);
         if (mounted) Navigator.pop(context);
       } else {
         final blockers = ScoreService.detectBlockers(visitWithScore, widget.profile);
@@ -389,7 +536,7 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
               ),
               Tab(
                 text:
-                    'Pendant  ${_answeredIn(_questionsPendant)}/${_questionsPendant.length}',
+                    'Visite  ${_answeredIn(_questionsPendant)}/${_questionsPendant.length}',
               ),
               const Tab(text: 'Après'),
             ],
@@ -399,8 +546,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildQuestionsTab(_questionsAvant),
-          _buildQuestionsTab(_questionsPendant),
+          _buildQuestionsTab(_questionsAvant, tabKey: 'avant'),
+          _buildQuestionsTab(_questionsPendant, tabKey: 'visite'),
           _buildApresTab(),
         ],
       ),
@@ -409,7 +556,10 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
 
   // ── Onglet questions (Avant / Pendant) ─────────────────────────────────────
 
-  Widget _buildQuestionsTab(List<QuestionTemplate> questions) {
+  Widget _buildQuestionsTab(
+    List<QuestionTemplate> questions, {
+    required String tabKey,
+  }) {
     if (questions.isEmpty) {
       return const Center(
         child: Text(
@@ -420,30 +570,75 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     }
 
     final grouped = _groupBySection(questions);
-
     return ListView(
-      padding: const EdgeInsets.only(
-        top: DSpacing.sm,
-        bottom: DSpacing.xxl,
-      ),
+      padding: const EdgeInsets.only(top: DSpacing.xs, bottom: DSpacing.xxl),
       children: [
         for (final entry in grouped.entries) ...[
-          _SectionHeader(
-            section: entry.key,
-            label: _sectionLabels[entry.key] ?? entry.key,
-            icon: _sectionIcons[entry.key] ?? Icons.help_outline,
-            answered: _answeredIn(entry.value),
-            total: entry.value.length,
-          ),
-          for (final q in entry.value)
-            QuestionCard(
-              key: ValueKey(q.id),
-              question: q,
-              value: _answers[q.id],
-              onChanged: (v) => _setAnswer(q.id, v),
+          ExpansionTile(
+            key: ValueKey('${tabKey}_${entry.key}'),
+            initiallyExpanded: false,
+            leading: Icon(
+              _sectionIcons[entry.key] ?? Icons.help_outline,
+              size: 18,
+              color: DoutangTheme.primary,
             ),
-          const SizedBox(height: DSpacing.sm),
+            title: Text(
+              (_sectionLabels[entry.key] ?? entry.key).toUpperCase(),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: DoutangTheme.textSecondary,
+                letterSpacing: 0.8,
+              ),
+            ),
+            trailing: _AnsweredBadge(
+              answered: _answeredIn(entry.value),
+              total: entry.value.length,
+            ),
+            children: [
+              for (final q in entry.value)
+                QuestionCard(
+                  key: ValueKey(q.id),
+                  question: q,
+                  value: _answers[q.id],
+                  onChanged: (v) => _setAnswer(q.id, v),
+                ),
+              const SizedBox(height: DSpacing.sm),
+            ],
+          ),
         ],
+        if (tabKey == 'avant')
+          ExpansionTile(
+            key: const ValueKey('avant_exterior'),
+            initiallyExpanded: false,
+            leading: const Icon(
+              Icons.yard_outlined,
+              size: 18,
+              color: DoutangTheme.primary,
+            ),
+            title: const Text(
+              'ESPACES EXTÉRIEURS',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: DoutangTheme.textSecondary,
+                letterSpacing: 0.8,
+              ),
+            ),
+            trailing: _AnsweredBadge(
+              answered: _exteriorSpaces.isNotEmpty ? 1 : 0,
+              total: 1,
+            ),
+            children: [
+              ExteriorSpacesCard(
+                key: const ValueKey('exterior_spaces_card'),
+                value: _exteriorSpaces,
+                onChanged: (spaces) =>
+                    setState(() => _exteriorSpaces = spaces),
+              ),
+              const SizedBox(height: DSpacing.sm),
+            ],
+          ),
       ],
     );
   }
@@ -593,6 +788,39 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Widget interne : badge réponses ───────────────────────────────────────
+
+class _AnsweredBadge extends StatelessWidget {
+  final int answered;
+  final int total;
+
+  const _AnsweredBadge({required this.answered, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final complete = answered == total;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: complete ? DoutangTheme.primarySurface : DoutangTheme.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: complete ? DoutangTheme.primary : DoutangTheme.border,
+        ),
+      ),
+      child: Text(
+        '$answered/$total',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: complete ? DoutangTheme.primary : DoutangTheme.textSecondary,
+        ),
       ),
     );
   }

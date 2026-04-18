@@ -37,21 +37,19 @@ class _QuestionCardState extends State<QuestionCard> {
   @override
   void initState() {
     super.initState();
+    final isText = widget.question.type == QuestionType.text ||
+        widget.question.type == QuestionType.photo;
     _textController = TextEditingController(
-      text: widget.question.type == QuestionType.text ||
-              widget.question.type == QuestionType.photo
-          ? (widget.value as String?) ?? ''
-          : '',
+      text: isText ? (widget.value as String?) ?? '' : '',
     );
   }
 
   @override
   void didUpdateWidget(QuestionCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Sync controller when parent sets the value programmatically (e.g. reset).
-    if ((widget.question.type == QuestionType.text ||
-            widget.question.type == QuestionType.photo) &&
-        widget.value != oldWidget.value) {
+    final isText = widget.question.type == QuestionType.text ||
+        widget.question.type == QuestionType.photo;
+    if (isText && widget.value != oldWidget.value) {
       final newText = (widget.value as String?) ?? '';
       if (_textController.text != newText) {
         _textController.text = newText;
@@ -146,6 +144,7 @@ class _QuestionCardState extends State<QuestionCard> {
       QuestionType.score => _buildStarRating(),
       QuestionType.yesNo => _buildYesNoButtons(),
       QuestionType.text || QuestionType.photo => _buildTextField(),
+      QuestionType.multiChoice => _buildMultiChoiceChips(),
     };
   }
 
@@ -254,6 +253,38 @@ class _QuestionCardState extends State<QuestionCard> {
           ),
         ),
       ),
+    );
+  }
+
+  // ── MultiChoice : chips ────────────────────────────────────────────────────
+
+  Widget _buildMultiChoiceChips() {
+    final options = widget.question.options;
+    final current = (widget.value as List<String>?) ?? const <String>[];
+    return Wrap(
+      spacing: DSpacing.sm,
+      runSpacing: DSpacing.xs,
+      children: options.map((option) {
+        final selected = current.contains(option);
+        return FilterChip(
+          label: Text(option),
+          selected: selected,
+          selectedColor: DoutangTheme.primarySurface,
+          checkmarkColor: DoutangTheme.primary,
+          side: BorderSide(
+            color: selected ? DoutangTheme.primary : DoutangTheme.border,
+          ),
+          onSelected: (on) {
+            final next = List<String>.from(current);
+            if (on) {
+              next.add(option);
+            } else {
+              next.remove(option);
+            }
+            widget.onChanged(next.isEmpty ? null : next);
+          },
+        );
+      }).toList(),
     );
   }
 

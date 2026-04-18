@@ -177,6 +177,60 @@ class VisitAnswers {
   final RenovationAnswers? renovation;
   final bool? liveIn2Years;
 
+  // ── Champs v2 : Charges ───────────────────────────────────────────────────
+
+  /// Montant des charges mensuelles (texte brut, parsé à l'affichage).
+  final String? chargesAmount;
+
+  // ── Champs v2 : Espaces extérieurs ───────────────────────────────────────
+
+  /// JSON-encoded List<{type, surface?}> — ex. [{"type":"Balcon","surface":8.5}]
+  final String? exteriorSpaces;
+
+  // ── Champs v2 : Nouveaux équipements ─────────────────────────────────────
+
+  /// Taille ascenseur (JSON-encoded List<String> : 'Petit', 'Moyen', 'Grand').
+  final String? elevatorSize;
+  final bool? parking;
+  final bool? buildingConcierge;
+  final bool? radiatorLiving;
+  final bool? radiatorBathroom;
+  final bool? radiatorBedroom;
+
+  /// Texte libre décrivant le type/mode de chauffage.
+  final String? heatingSystem;
+
+  // ── Champs v2 : Immeuble complémentaires ─────────────────────────────────
+
+  final bool? caveAccess;
+  final bool? caveDoor;
+  final bool? caveDry;
+  final bool? bikeStorageSecured;
+  final bool? bikeStorageSpace;
+  final int? trashAccess;
+  final bool? disabledAccess;
+
+  // ── Champs v2 : Cuisine complémentaires ──────────────────────────────────
+
+  final bool? dishwasherSpace;
+  final bool? trashSpace;
+
+  /// JSON-encoded List<String> : 'Ouverte', 'Semi-ouverte', 'Fermée'
+  final String? kitchenOpenClosed;
+  final bool? vmcKitchen;
+
+  // ── Champs v2 : Salle de bain ─────────────────────────────────────────────
+
+  /// JSON-encoded List<String> des équipements présents (douche, VMC…)
+  final String? bathroomFeatures;
+
+  // ── Champs v2 : Espaces extérieurs ──────────────────────────────────────
+
+  final String? outdoorSurface;
+  final int? outdoorNeighborExposure;
+  final int? outdoorSunExposure;
+  final int? outdoorViewQuality;
+
   VisitAnswers({
     // v1
     this.luminosite,
@@ -236,6 +290,31 @@ class VisitAnswers {
     this.landTax,
     this.renovation,
     this.liveIn2Years,
+    this.chargesAmount,
+    this.exteriorSpaces,
+    this.elevatorSize,
+    this.parking,
+    this.buildingConcierge,
+    this.radiatorLiving,
+    this.radiatorBathroom,
+    this.radiatorBedroom,
+    this.heatingSystem,
+    this.caveAccess,
+    this.caveDoor,
+    this.caveDry,
+    this.bikeStorageSecured,
+    this.bikeStorageSpace,
+    this.trashAccess,
+    this.disabledAccess,
+    this.dishwasherSpace,
+    this.trashSpace,
+    this.kitchenOpenClosed,
+    this.vmcKitchen,
+    this.bathroomFeatures,
+    this.outdoorSurface,
+    this.outdoorNeighborExposure,
+    this.outdoorSunExposure,
+    this.outdoorViewQuality,
   });
 
   /// Champs notés 1-5 utilisés pour le calcul du score v1 (rétrocompat).
@@ -309,6 +388,31 @@ class VisitAnswers {
         'land_tax': landTax,
         'renovation': renovation?.toJson(),
         'live_in_2_years': liveIn2Years,
+        'charges_amount': chargesAmount,
+        'exterior_spaces': exteriorSpaces,
+        'elevator_size': elevatorSize,
+        'parking': parking,
+        'building_concierge': buildingConcierge,
+        'radiator_living': radiatorLiving,
+        'radiator_bathroom': radiatorBathroom,
+        'radiator_bedroom': radiatorBedroom,
+        'heating_system': heatingSystem,
+        'cave_access': caveAccess,
+        'cave_door': caveDoor,
+        'cave_dry': caveDry,
+        'bike_storage_secured': bikeStorageSecured,
+        'bike_storage_space': bikeStorageSpace,
+        'trash_access': trashAccess,
+        'disabled_access': disabledAccess,
+        'dishwasher_space': dishwasherSpace,
+        'trash_space': trashSpace,
+        'kitchen_open_closed': kitchenOpenClosed,
+        'vmc_kitchen': vmcKitchen,
+        'bathroom_features': bathroomFeatures,
+        'outdoor_surface': outdoorSurface,
+        'outdoor_neighbor_exposure': outdoorNeighborExposure,
+        'outdoor_sun_exposure': outdoorSunExposure,
+        'outdoor_view_quality': outdoorViewQuality,
       };
 
   factory VisitAnswers.fromJson(Map<String, dynamic> json) => VisitAnswers(
@@ -377,5 +481,30 @@ class VisitAnswers {
                 json['renovation'] as Map<String, dynamic>)
             : null,
         liveIn2Years: json['live_in_2_years'] as bool?,
+        chargesAmount: json['charges_amount'] as String?,
+        exteriorSpaces: json['exterior_spaces'] as String?,
+        elevatorSize: json['elevator_size'] as String?,
+        parking: json['parking'] as bool?,
+        buildingConcierge: json['building_concierge'] as bool?,
+        radiatorLiving: json['radiator_living'] as bool?,
+        radiatorBathroom: json['radiator_bathroom'] as bool?,
+        radiatorBedroom: json['radiator_bedroom'] as bool?,
+        heatingSystem: json['heating_system'] as String?,
+        caveAccess: json['cave_access'] as bool?,
+        caveDoor: json['cave_door'] as bool?,
+        caveDry: json['cave_dry'] as bool?,
+        bikeStorageSecured: json['bike_storage_secured'] as bool?,
+        bikeStorageSpace: json['bike_storage_space'] as bool?,
+        trashAccess: (json['trash_access'] as num?)?.toInt(),
+        disabledAccess: json['disabled_access'] as bool?,
+        dishwasherSpace: json['dishwasher_space'] as bool?,
+        trashSpace: json['trash_space'] as bool?,
+        kitchenOpenClosed: json['kitchen_open_closed'] as String?,
+        vmcKitchen: json['vmc_kitchen'] as bool?,
+        bathroomFeatures: json['bathroom_features'] as String?,
+        outdoorSurface: json['outdoor_surface'] as String?,
+        outdoorNeighborExposure: (json['outdoor_neighbor_exposure'] as num?)?.toInt(),
+        outdoorSunExposure: (json['outdoor_sun_exposure'] as num?)?.toInt(),
+        outdoorViewQuality: (json['outdoor_view_quality'] as num?)?.toInt(),
       );
 }
