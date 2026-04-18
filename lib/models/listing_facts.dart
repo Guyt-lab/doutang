@@ -55,6 +55,8 @@ class ListingFacts {
   final bool? hasGarden;
   final double? gardenSurface;
   final bool? hasCourtyard;
+  final bool? hasParking;
+  final bool? hasCellar;
 
   // ── Prestations & caractère ───────────────────────────────────────────
   final bool? hasBeams;
@@ -106,6 +108,8 @@ class ListingFacts {
     this.hasGarden,
     this.gardenSurface,
     this.hasCourtyard,
+    this.hasParking,
+    this.hasCellar,
     this.hasBeams,
     this.hasFireplace,
     this.fireplaceFunctional,
@@ -155,6 +159,8 @@ class ListingFacts {
       hasGarden: hasGarden ?? other.hasGarden,
       gardenSurface: gardenSurface ?? other.gardenSurface,
       hasCourtyard: hasCourtyard ?? other.hasCourtyard,
+      hasParking: hasParking ?? other.hasParking,
+      hasCellar: hasCellar ?? other.hasCellar,
       hasBeams: hasBeams ?? other.hasBeams,
       hasFireplace: hasFireplace ?? other.hasFireplace,
       fireplaceFunctional: fireplaceFunctional ?? other.fireplaceFunctional,
@@ -203,6 +209,8 @@ class ListingFacts {
         'has_garden': hasGarden,
         'garden_surface': gardenSurface,
         'has_courtyard': hasCourtyard,
+        'has_parking': hasParking,
+        'has_cellar': hasCellar,
         'has_beams': hasBeams,
         'has_fireplace': hasFireplace,
         'fireplace_functional': fireplaceFunctional,
@@ -259,6 +267,8 @@ class ListingFacts {
         hasGarden: json['has_garden'] as bool?,
         gardenSurface: (json['garden_surface'] as num?)?.toDouble(),
         hasCourtyard: json['has_courtyard'] as bool?,
+        hasParking: json['has_parking'] as bool?,
+        hasCellar: json['has_cellar'] as bool?,
         hasBeams: json['has_beams'] as bool?,
         hasFireplace: json['has_fireplace'] as bool?,
         fireplaceFunctional: json['fireplace_functional'] as bool?,

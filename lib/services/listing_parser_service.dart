@@ -9,12 +9,47 @@ class ParsedListing {
   final int? rooms;
   final String? address;
 
+  // ── Champs sémantiques (passe 3) ──────────────────────────────────────────
+  /// 'location' ou 'achat'
+  final String? transactionType;
+
+  /// 'appartement' ou 'maison'
+  final String? propertyType;
+
+  final int? floor;
+
+  /// Classe DPE : 'A' à 'G'
+  final String? dpe;
+
+  final double? charges;
+  final bool? hasBalcony;
+  final bool? hasTerrace;
+  final bool? hasGarden;
+  final bool? hasParking;
+  final bool? hasCellar;
+  final bool? isFurnished;
+
+  /// Valeur brute normalisée : 'gaz', 'electrique', 'pompeAChaleur', etc.
+  final String? heatingType;
+
   const ParsedListing({
     this.title,
     this.price,
     this.surface,
     this.rooms,
     this.address,
+    this.transactionType,
+    this.propertyType,
+    this.floor,
+    this.dpe,
+    this.charges,
+    this.hasBalcony,
+    this.hasTerrace,
+    this.hasGarden,
+    this.hasParking,
+    this.hasCellar,
+    this.isFurnished,
+    this.heatingType,
   });
 
   /// Vrai si au moins un champ a été extrait.
@@ -28,6 +63,7 @@ class ParsedListing {
 /// Stratégie :
 ///   1. Balises `<meta property="og:*">` — présentes sur la quasi-totalité des sites
 ///   2. Sélecteurs CSS courants (class contenant "price", "surface", etc.)
+///   3. Détection sémantique par regex sur le texte brut
 ///
 /// [parseUrl] fait le fetch réseau ; [parseHtml] est une fonction pure testable.
 class ListingParserService {
@@ -92,12 +128,143 @@ class ListingParserService {
     title ??= _titleFromHtml(html);
     address ??= _addressFromHtml(html);
 
-    return ParsedListing(
+    final partial = ParsedListing(
       title: title?.isNotEmpty == true ? title : null,
       price: price,
       surface: surface,
       rooms: rooms,
       address: address?.isNotEmpty == true ? address : null,
+    );
+
+    // — Priorité 3 : détection sémantique sur texte brut —
+    return _semanticPass(html, partial);
+  }
+
+  // ── Passe sémantique ──────────────────────────────────────────────────────
+
+  static ParsedListing _semanticPass(String html, ParsedListing current) {
+    // Texte brut sans balises HTML, en minuscules pour la détection
+    final text = html
+        .replaceAll(RegExp(r'<[^>]+>'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .toLowerCase();
+
+    // Transaction
+    String? transactionType;
+    if (RegExp(r'\b(louer|location|loyer|à louer)\b').hasMatch(text)) {
+      transactionType = 'location';
+    } else if (RegExp(r'\b(acheter|achat|vente|vendre|à vendre)\b')
+        .hasMatch(text)) {
+      transactionType = 'achat';
+    }
+
+    // Type de bien
+    String? propertyType;
+    if (RegExp(r'\b(appartement|appart\b|studio|duplex|triplex|loft)\b')
+        .hasMatch(text)) {
+      propertyType = 'appartement';
+    } else if (RegExp(r'\b(maison|villa|pavillon|chalet)\b').hasMatch(text)) {
+      propertyType = 'maison';
+    }
+
+    // Étage
+    int? floor;
+    final floorRe = RegExp(
+      r'(\d+)(?:e|er|ème|eme)\s*étage|étage\s*(\d+)|au\s+(\d+)(?:e|er|ème|eme)',
+    );
+    final floorM = floorRe.firstMatch(text);
+    if (floorM != null) {
+      floor = int.tryParse(
+          floorM.group(1) ?? floorM.group(2) ?? floorM.group(3) ?? '');
+    }
+    if (floor == null &&
+        RegExp(r'rez[\s-]de[\s-]chauss').hasMatch(text)) {
+      floor = 0;
+    }
+
+    // DPE
+    String? dpe;
+    final dpeRe = RegExp(
+      r'\bdpe\s*:?\s*([a-g])\b|classe\s+([a-g])\b|lettre\s+([a-g])\b',
+      caseSensitive: false,
+    );
+    final dpeM = dpeRe.firstMatch(text);
+    if (dpeM != null) {
+      dpe = (dpeM.group(1) ?? dpeM.group(2) ?? dpeM.group(3))?.toUpperCase();
+    }
+
+    // Charges
+    double? charges;
+    final chargesRe = RegExp(
+      r'charges?\s*:?\s*(\d[\d\s\u00a0]*)\s*€'
+      r'|(\d[\d\s\u00a0]*)\s*€\s*de\s+charges?',
+    );
+    final chargesM = chargesRe.firstMatch(text);
+    if (chargesM != null) {
+      final raw = (chargesM.group(1) ?? chargesM.group(2))
+          ?.replaceAll(RegExp(r'[\s\u00a0]'), '');
+      charges = double.tryParse(raw ?? '');
+    }
+
+    // Équipements booléens — présence du mot = true, pas d'absence = null
+    final hasBalcony =
+        current.hasBalcony ?? (text.contains('balcon') ? true : null);
+    final hasTerrace =
+        current.hasTerrace ?? (text.contains('terrasse') ? true : null);
+    final hasGarden =
+        current.hasGarden ?? (text.contains('jardin') ? true : null);
+    final hasParking = current.hasParking ??
+        (RegExp(r'\b(parking|garage|stationnement)\b').hasMatch(text)
+            ? true
+            : null);
+    final hasCellar =
+        current.hasCellar ?? (text.contains('cave') ? true : null);
+
+    // Meublé
+    bool? isFurnished = current.isFurnished;
+    if (isFurnished == null) {
+      if (RegExp(r'\bnon[\s-]meublé').hasMatch(text)) {
+        isFurnished = false;
+      } else if (RegExp(r'\bmeublé').hasMatch(text)) {
+        isFurnished = true;
+      }
+    }
+
+    // Chauffage
+    String? heatingType = current.heatingType;
+    if (heatingType == null) {
+      if (RegExp(r'chauffage\s+(?:au\s+)?gaz|gaz\s+(?:individuel|collectif)')
+          .hasMatch(text)) {
+        heatingType = 'gaz';
+      } else if (RegExp(r'chauffage\s+électrique|électrique').hasMatch(text)) {
+        heatingType = 'electrique';
+      } else if (RegExp(r'pompe\s+[aà]\s+chaleur|\bpac\b').hasMatch(text)) {
+        heatingType = 'pompeAChaleur';
+      } else if (RegExp(r'plancher\s+chauffant').hasMatch(text)) {
+        heatingType = 'plancherChauffant';
+      } else if (RegExp(r'chauffage\s+(?:au\s+)?fioul').hasMatch(text)) {
+        heatingType = 'fioul';
+      }
+    }
+
+    return ParsedListing(
+      title: current.title,
+      price: current.price,
+      surface: current.surface,
+      rooms: current.rooms,
+      address: current.address,
+      transactionType: transactionType,
+      propertyType: propertyType,
+      floor: floor,
+      dpe: dpe,
+      charges: charges,
+      hasBalcony: hasBalcony,
+      hasTerrace: hasTerrace,
+      hasGarden: hasGarden,
+      hasParking: hasParking,
+      hasCellar: hasCellar,
+      isFurnished: isFurnished,
+      heatingType: heatingType,
     );
   }
 

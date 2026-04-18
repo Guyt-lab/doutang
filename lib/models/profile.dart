@@ -86,6 +86,10 @@ class SearchCriteria {
 
   /// 'location' ou 'achat'
   final String? projectType;
+
+  /// 'appartement' ou 'maison'
+  final String? preferredPropertyKind;
+
   final List<String> zones;
   final List<String> tags;
 
@@ -94,6 +98,7 @@ class SearchCriteria {
     this.surfaceMin,
     this.roomsMin,
     this.projectType,
+    this.preferredPropertyKind,
     List<String>? zones,
     List<String>? tags,
   })  : zones = zones ?? [],
@@ -104,6 +109,7 @@ class SearchCriteria {
     double? surfaceMin,
     int? roomsMin,
     String? projectType,
+    String? preferredPropertyKind,
     List<String>? zones,
     List<String>? tags,
   }) {
@@ -112,6 +118,8 @@ class SearchCriteria {
       surfaceMin: surfaceMin ?? this.surfaceMin,
       roomsMin: roomsMin ?? this.roomsMin,
       projectType: projectType ?? this.projectType,
+      preferredPropertyKind:
+          preferredPropertyKind ?? this.preferredPropertyKind,
       zones: zones ?? this.zones,
       tags: tags ?? this.tags,
     );
@@ -122,6 +130,7 @@ class SearchCriteria {
         'surface_min': surfaceMin,
         'rooms_min': roomsMin,
         'project_type': projectType,
+        'preferred_property_kind': preferredPropertyKind,
         'zones': zones,
         'tags': tags,
       };
@@ -131,6 +140,7 @@ class SearchCriteria {
         surfaceMin: (json['surface_min'] as num?)?.toDouble(),
         roomsMin: (json['rooms_min'] as num?)?.toInt(),
         projectType: json['project_type'] as String?,
+        preferredPropertyKind: json['preferred_property_kind'] as String?,
         zones: List<String>.from(json['zones'] as List? ?? []),
         tags: List<String>.from(json['tags'] as List? ?? []),
       );

@@ -261,6 +261,138 @@ void main() {
         expect(r.rooms, equals(4));
       });
     });
+
+    // ── Passe sémantique ──────────────────────────────────────────────────────
+
+    group('passe sémantique — type de transaction', () {
+      test('détecte "location" depuis le corps', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>À louer : appartement 2 pièces. Loyer 900 €/mois.</body></html>',
+        );
+        expect(r.transactionType, equals('location'));
+      });
+
+      test('détecte "achat" depuis le corps', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>À vendre : maison 5 pièces. Prix 320 000 €.</body></html>',
+        );
+        expect(r.transactionType, equals('achat'));
+      });
+
+      test('retourne null si aucun indicateur', () {
+        final r = ListingParserService.parseHtml(_htmlEmpty);
+        expect(r.transactionType, isNull);
+      });
+    });
+
+    group('passe sémantique — type de bien', () {
+      test('détecte "appartement"', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Bel appartement au 3ème étage.</body></html>',
+        );
+        expect(r.propertyType, equals('appartement'));
+      });
+
+      test('détecte "maison"', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Maison avec jardin et garage.</body></html>',
+        );
+        expect(r.propertyType, equals('maison'));
+      });
+
+      test('détecte "studio" comme appartement', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Studio meublé, 20 m², 650 €/mois.</body></html>',
+        );
+        expect(r.propertyType, equals('appartement'));
+      });
+    });
+
+    group('passe sémantique — étage', () {
+      test('extrait "3ème étage"', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement au 3ème étage sans ascenseur.</body></html>',
+        );
+        expect(r.floor, equals(3));
+      });
+
+      test('extrait "rez-de-chaussée" comme étage 0', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement en rez-de-chaussée avec jardin.</body></html>',
+        );
+        expect(r.floor, equals(0));
+      });
+    });
+
+    group('passe sémantique — équipements booléens', () {
+      test('détecte balcon', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement avec balcon vue dégagée.</body></html>',
+        );
+        expect(r.hasBalcony, isTrue);
+      });
+
+      test('détecte terrasse', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Grand appartement avec terrasse.</body></html>',
+        );
+        expect(r.hasTerrace, isTrue);
+      });
+
+      test('détecte parking', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Inclus : parking en sous-sol.</body></html>',
+        );
+        expect(r.hasParking, isTrue);
+      });
+
+      test('détecte cave', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Cave et parking inclus dans le loyer.</body></html>',
+        );
+        expect(r.hasCellar, isTrue);
+      });
+
+      test('retourne null quand non mentionné', () {
+        final r = ListingParserService.parseHtml(_htmlEmpty);
+        expect(r.hasBalcony, isNull);
+        expect(r.hasParking, isNull);
+      });
+    });
+
+    group('passe sémantique — meublé', () {
+      test('détecte meublé = true', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement meublé, toutes charges comprises.</body></html>',
+        );
+        expect(r.isFurnished, isTrue);
+      });
+
+      test('détecte non meublé = false', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement non meublé, 2 pièces.</body></html>',
+        );
+        expect(r.isFurnished, isFalse);
+      });
+    });
+
+    group('passe sémantique — charges', () {
+      test('extrait les charges mensuelles', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Loyer 800 € + charges : 80 € par mois.</body></html>',
+        );
+        expect(r.charges, equals(80.0));
+      });
+    });
+
+    group('passe sémantique — DPE', () {
+      test('extrait la classe DPE', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>DPE : C. Logement économe en énergie.</body></html>',
+        );
+        expect(r.dpe, equals('C'));
+      });
+    });
   });
 
   // ── ListingStorageService (via import séparé dans un autre fichier) ────────
