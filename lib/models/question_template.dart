@@ -84,15 +84,13 @@ class QuestionTemplate {
         section: json['section'] as String,
         text: json['text'] as String,
         hint: json['hint'] as String?,
-        level: enumFromJson(
-                QuestionLevel.values, json['level'] as String?) ??
+        level: enumFromJson(QuestionLevel.values, json['level'] as String?) ??
             QuestionLevel.nice,
-        type: enumFromJson(
-                QuestionType.values, json['type'] as String?) ??
+        type: enumFromJson(QuestionType.values, json['type'] as String?) ??
             QuestionType.score,
-        timing: enumFromJson(
-                QuestionTiming.values, json['timing'] as String?) ??
-            QuestionTiming.flexible,
+        timing:
+            enumFromJson(QuestionTiming.values, json['timing'] as String?) ??
+                QuestionTiming.flexible,
         appliesTo: (json['applies_to'] as List? ?? [])
             .map((e) =>
                 enumFromJson(ProjectFilter.values, e as String?) ??
@@ -174,11 +172,9 @@ class QuestionnaireConfig {
 
   Map<String, dynamic> toJson() => {
         'disabled_question_ids': disabledQuestionIds.toList(),
-        'custom_questions':
-            customQuestions.map((q) => q.toJson()).toList(),
+        'custom_questions': customQuestions.map((q) => q.toJson()).toList(),
         'question_tag_overrides': questionTagOverrides.map(
-          (id, filters) =>
-              MapEntry(id, filters.map((f) => f.name).toList()),
+          (id, filters) => MapEntry(id, filters.map((f) => f.name).toList()),
         ),
         'score_weights': scoreWeights,
         'transport_max_minutes': transportMaxMinutes,
@@ -195,8 +191,7 @@ class QuestionnaireConfig {
           json['enabled_question_ids'] as List? ?? [],
         ),
         customQuestions: (json['custom_questions'] as List? ?? [])
-            .map((e) =>
-                QuestionTemplate.fromJson(e as Map<String, dynamic>))
+            .map((e) => QuestionTemplate.fromJson(e as Map<String, dynamic>))
             .toList(),
         questionTagOverrides: (json['question_tag_overrides']
                     as Map<String, dynamic>? ??

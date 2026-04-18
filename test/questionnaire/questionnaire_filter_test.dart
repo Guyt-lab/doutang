@@ -26,8 +26,8 @@ List<QuestionTemplate> filterQuestions({
     final tags = effectiveTags(q);
     if (tags.isEmpty) return true;
 
-    final hasTxTag =
-        tags.any((f) => f == ProjectFilter.achat || f == ProjectFilter.location);
+    final hasTxTag = tags
+        .any((f) => f == ProjectFilter.achat || f == ProjectFilter.location);
     if (hasTxTag && !tags.contains(txFilter)) return false;
 
     final hasPropTag = tags.any(
@@ -41,18 +41,17 @@ List<QuestionTemplate> filterQuestions({
     return true;
   }
 
-  return [...kDefaultQuestions, ...cfg.customQuestions]
-      .where(applies)
-      .toList();
+  return [...kDefaultQuestions, ...cfg.customQuestions].where(applies).toList();
 }
 
 List<QuestionTemplate> _avant(List<QuestionTemplate> all) =>
     all.where((q) => q.timing == QuestionTiming.avant).toList();
 
-List<QuestionTemplate> _pendant(List<QuestionTemplate> all) =>
-    all.where((q) =>
+List<QuestionTemplate> _pendant(List<QuestionTemplate> all) => all
+    .where((q) =>
         q.timing == QuestionTiming.pendant ||
-        q.timing == QuestionTiming.flexible).toList();
+        q.timing == QuestionTiming.flexible)
+    .toList();
 
 List<QuestionTemplate> _apres(List<QuestionTemplate> all) =>
     all.where((q) => q.timing == QuestionTiming.apres).toList();
@@ -66,12 +65,23 @@ void main() {
   group('Tagging des nouvelles questions', () {
     test('sections maison uniquement taguées [maison]', () {
       final maisonIds = [
-        kQFacadeFissures, kQSolAffaissement, kQMursDeformation,
-        kQToitureTuiles, kQGoutieres, kQCharpente,
-        kQTerrainPente, kQEauStagnante, kQTracesInondation,
-        kQRaccordementEauElecGaz, kQToutALegout, kQFibreMaison,
-        kQAccesRoute, kQStationnementMaison,
-        kQErpConsulte, kQRisqueInondation, kQPlu,
+        kQFacadeFissures,
+        kQSolAffaissement,
+        kQMursDeformation,
+        kQToitureTuiles,
+        kQGoutieres,
+        kQCharpente,
+        kQTerrainPente,
+        kQEauStagnante,
+        kQTracesInondation,
+        kQRaccordementEauElecGaz,
+        kQToutALegout,
+        kQFibreMaison,
+        kQAccesRoute,
+        kQStationnementMaison,
+        kQErpConsulte,
+        kQRisqueInondation,
+        kQPlu,
       ];
       for (final id in maisonIds) {
         final q = kDefaultQuestions.firstWhere((q) => q.id == id,
@@ -85,12 +95,18 @@ void main() {
 
     test('diagnostics taguées [achat, appartement]', () {
       final diagIds = [
-        kQTravauxVotes, kQProceduresCopro, kQDpeNiveau,
-        kQElecAge, kQDiagElec, kQDiagAmiante, kQDiagPlomb,
+        kQTravauxVotes,
+        kQProceduresCopro,
+        kQDpeNiveau,
+        kQElecAge,
+        kQDiagElec,
+        kQDiagAmiante,
+        kQDiagPlomb,
       ];
       for (final id in diagIds) {
         final q = kDefaultQuestions.firstWhere((q) => q.id == id);
-        expect(q.appliesTo, containsAll([ProjectFilter.achat, ProjectFilter.appartement]),
+        expect(q.appliesTo,
+            containsAll([ProjectFilter.achat, ProjectFilter.appartement]),
             reason: '$id devrait être tagué achat+appartement');
         expect(q.appliesTo, isNot(contains(ProjectFilter.maison)),
             reason: '$id ne devrait pas être tagué maison');
@@ -106,14 +122,19 @@ void main() {
     test('kQCoproprietieMaison est achat+maison, timing avant', () {
       final q =
           kDefaultQuestions.firstWhere((q) => q.id == kQCoproprietieMaison);
-      expect(q.appliesTo, containsAll([ProjectFilter.achat, ProjectFilter.maison]));
+      expect(q.appliesTo,
+          containsAll([ProjectFilter.achat, ProjectFilter.maison]));
       expect(q.timing, equals(QuestionTiming.avant));
     });
 
     test('sections maison pendant sont bien timing pendant', () {
       final pendantIds = [
-        kQFacadeFissures, kQToitureTuiles, kQTerrainPente,
-        kQRaccordementEauElecGaz, kQAccesRoute, kQCrepiEtat,
+        kQFacadeFissures,
+        kQToitureTuiles,
+        kQTerrainPente,
+        kQRaccordementEauElecGaz,
+        kQAccesRoute,
+        kQCrepiEtat,
       ];
       for (final id in pendantIds) {
         final q = kDefaultQuestions.firstWhere((q) => q.id == id);
@@ -124,8 +145,12 @@ void main() {
 
     test('sections maison après sont bien timing apres', () {
       final apresIds = [
-        kQProjetsConstruction, kQPlu, kQTerrainsConstructibles,
-        kQErpConsulte, kQRisqueInondation, kQRisqueGlissement,
+        kQProjetsConstruction,
+        kQPlu,
+        kQTerrainsConstructibles,
+        kQErpConsulte,
+        kQRisqueInondation,
+        kQRisqueGlissement,
       ];
       for (final id in apresIds) {
         final q = kDefaultQuestions.firstWhere((q) => q.id == id);
@@ -136,7 +161,10 @@ void main() {
 
     test('diagnostics techniques sont bien timing apres', () {
       final apresIds = [
-        kQTravauxVotes, kQDpeNiveau, kQDiagElec, kQDiagAmiante,
+        kQTravauxVotes,
+        kQDpeNiveau,
+        kQDiagElec,
+        kQDiagAmiante,
       ];
       for (final id in apresIds) {
         final q = kDefaultQuestions.firstWhere((q) => q.id == id);
@@ -169,9 +197,10 @@ void main() {
       expect(_hasId(all, kQPlu), isFalse);
     });
 
-    test('diagnostics achat+appartement présents (avant tab)', () {
-      expect(_hasId(_apres(all), kQTravauxVotes), isTrue);
-      expect(_hasId(_apres(all), kQDpeNiveau), isTrue);
+    test('diagnostics achat+appartement absents (location)', () {
+      // Tagués [achat, appartement] : filtrés car location ≠ achat
+      expect(_hasId(_apres(all), kQTravauxVotes), isFalse);
+      expect(_hasId(_apres(all), kQDpeNiveau), isFalse);
     });
 
     test('questions achat absentes', () {
@@ -212,9 +241,10 @@ void main() {
       expect(_hasId(_apres(all), kQRisqueInondation), isTrue);
     });
 
-    test('diagnostics achat+appartement présents', () {
-      expect(_hasId(_apres(all), kQTravauxVotes), isTrue);
-      expect(_hasId(_apres(all), kQDiagAmiante), isTrue);
+    test('diagnostics achat+appartement absents (maison)', () {
+      // Tagués [achat, appartement] : filtrés car maison ≠ appartement
+      expect(_hasId(_apres(all), kQTravauxVotes), isFalse);
+      expect(_hasId(_apres(all), kQDiagAmiante), isFalse);
     });
 
     test('questions appartement-only absentes', () {

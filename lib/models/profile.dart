@@ -65,10 +65,10 @@ class UserProfile {
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
         id: json['id'] as String,
         owner: json['owner'] as String,
-        criteria: SearchCriteria.fromJson(
-            json['criteria'] as Map<String, dynamic>),
-        weights: Map<String, int>.from(
-            (json['weights'] as Map<String, dynamic>).map(
+        criteria:
+            SearchCriteria.fromJson(json['criteria'] as Map<String, dynamic>),
+        weights:
+            Map<String, int>.from((json['weights'] as Map<String, dynamic>).map(
           (k, v) => MapEntry(k, (v as num).toInt()),
         )),
         questionnaireConfig: json['questionnaire_config'] != null

@@ -88,8 +88,11 @@ class Listing {
       updatedAt: DateTime.now(),
       facts: facts ?? this.facts,
       contact: clearContact ? null : (contact ?? this.contact),
-      propertyKind: clearPropertyKind ? null : (propertyKind ?? this.propertyKind),
-      transactionKind: clearTransactionKind ? null : (transactionKind ?? this.transactionKind),
+      propertyKind:
+          clearPropertyKind ? null : (propertyKind ?? this.propertyKind),
+      transactionKind: clearTransactionKind
+          ? null
+          : (transactionKind ?? this.transactionKind),
     );
   }
 

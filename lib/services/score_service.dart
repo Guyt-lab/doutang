@@ -52,10 +52,8 @@ class ScoreService {
   static double calculateCoupleScore(List<Visit> visitsForListing) {
     if (visitsForListing.isEmpty) return 0.0;
 
-    final validScores = visitsForListing
-        .where((v) => v.score > 0)
-        .map((v) => v.score)
-        .toList();
+    final validScores =
+        visitsForListing.where((v) => v.score > 0).map((v) => v.score).toList();
 
     if (validScores.isEmpty) return 0.0;
 

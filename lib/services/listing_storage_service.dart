@@ -40,9 +40,7 @@ class ListingStorageService {
     if (!file.existsSync()) return [];
     final content = await file.readAsString();
     final raw = jsonDecode(content) as List<dynamic>;
-    return raw
-        .map((e) => Listing.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return raw.map((e) => Listing.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   static Future<void> add(

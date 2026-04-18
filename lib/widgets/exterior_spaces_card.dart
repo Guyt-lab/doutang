@@ -73,15 +73,11 @@ class _ExteriorSpacesCardState extends State<ExteriorSpacesCard> {
   }
 
   void _notify() {
-    final spaces = _kTypes
-        .where(_selected.contains)
-        .map((type) {
-          final text =
-              (_controllers[type]?.text ?? '').replaceAll(',', '.');
-          final surface = double.tryParse(text);
-          return ExteriorSpace(type: type, surface: surface);
-        })
-        .toList();
+    final spaces = _kTypes.where(_selected.contains).map((type) {
+      final text = (_controllers[type]?.text ?? '').replaceAll(',', '.');
+      final surface = double.tryParse(text);
+      return ExteriorSpace(type: type, surface: surface);
+    }).toList();
     widget.onChanged(spaces);
   }
 
@@ -158,8 +154,7 @@ class _ExteriorSpacesCardState extends State<ExteriorSpacesCard> {
                   color: selected
                       ? DoutangTheme.textPrimary
                       : DoutangTheme.textSecondary,
-                  fontWeight:
-                      selected ? FontWeight.w500 : FontWeight.w400,
+                  fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
                 ),
               ),
             ),
@@ -168,14 +163,10 @@ class _ExteriorSpacesCardState extends State<ExteriorSpacesCard> {
               width: 22,
               height: 22,
               decoration: BoxDecoration(
-                color: selected
-                    ? DoutangTheme.primary
-                    : DoutangTheme.surface,
+                color: selected ? DoutangTheme.primary : DoutangTheme.surface,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: selected
-                      ? DoutangTheme.primary
-                      : DoutangTheme.border,
+                  color: selected ? DoutangTheme.primary : DoutangTheme.border,
                   width: selected ? 0 : 1.5,
                 ),
               ),

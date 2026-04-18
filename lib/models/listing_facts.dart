@@ -233,26 +233,25 @@ class ListingFacts {
         floorsTotal: (json['floors_total'] as num?)?.toInt(),
         isFurnished: json['is_furnished'] as bool?,
         buildingYear: (json['building_year'] as num?)?.toInt(),
-        style: enumFromJson(
-            BuildingStyle.values, json['style'] as String?),
+        style: enumFromJson(BuildingStyle.values, json['style'] as String?),
         dpe: json['dpe'] as String?,
-        heatingType: enumFromJson(
-            HeatingType.values, json['heating_type'] as String?),
+        heatingType:
+            enumFromJson(HeatingType.values, json['heating_type'] as String?),
         heatingControl: enumFromJson(
             HeatingControl.values, json['heating_control'] as String?),
-        doubleGlazing: enumFromJson(
-            GlazingType.values, json['double_glazing'] as String?),
+        doubleGlazing:
+            enumFromJson(GlazingType.values, json['double_glazing'] as String?),
         windowsCount: (json['windows_count'] as num?)?.toInt(),
         secureDoor: json['secure_door'] as bool?,
         fiber: json['fiber'] as bool?,
-        waterQuality: enumFromJson(
-            WaterQuality.values, json['water_quality'] as String?),
+        waterQuality:
+            enumFromJson(WaterQuality.values, json['water_quality'] as String?),
         floorTypeLiving: enumFromJson(
             FloorType.values, json['floor_type_living'] as String?),
         floorTypeBedroom: enumFromJson(
             FloorType.values, json['floor_type_bedroom'] as String?),
-        kitchenType: enumFromJson(
-            KitchenType.values, json['kitchen_type'] as String?),
+        kitchenType:
+            enumFromJson(KitchenType.values, json['kitchen_type'] as String?),
         kitchenEnergy: enumFromJson(
             KitchenEnergy.values, json['kitchen_energy'] as String?),
         kitchenEquipped: json['kitchen_equipped'] as bool?,
@@ -275,8 +274,8 @@ class ListingFacts {
         hasMouldings: json['has_mouldings'] as bool?,
         hasHallway: json['has_hallway'] as bool?,
         separateToilet: json['separate_toilet'] as bool?,
-        bathroomSize: enumFromJson(
-            BathroomSize.values, json['bathroom_size'] as String?),
+        bathroomSize:
+            enumFromJson(BathroomSize.values, json['bathroom_size'] as String?),
         hasDressing: json['has_dressing'] as bool?,
         bedroomBathroomProximity: enumFromJson(
             Proximity.values, json['bedroom_bathroom_proximity'] as String?),

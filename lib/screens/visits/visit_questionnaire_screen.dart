@@ -75,8 +75,7 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
   late final List<QuestionTemplate> _questionsPendant;
   late final List<QuestionTemplate> _questionsApres;
 
-  bool get _isAchat =>
-      widget.profile.criteria.projectType == 'achat';
+  bool get _isAchat => widget.profile.criteria.projectType == 'achat';
 
   // ── Cycle de vie ───────────────────────────────────────────────────────────
 
@@ -110,7 +109,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
 
       final tags = effectiveTags(q);
       if (tags.isNotEmpty) {
-        final txFilter = _isAchat ? ProjectFilter.achat : ProjectFilter.location;
+        final txFilter =
+            _isAchat ? ProjectFilter.achat : ProjectFilter.location;
         final propKind = widget.listing.propertyKind;
 
         final hasTxTag = tags.any(
@@ -398,8 +398,7 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     return groups;
   }
 
-  int _answeredIn(List<QuestionTemplate> questions) =>
-      questions.where((q) {
+  int _answeredIn(List<QuestionTemplate> questions) => questions.where((q) {
         final v = _answers[q.id];
         if (v == null) return false;
         if (v is List) return v.isNotEmpty;
@@ -668,7 +667,8 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
         await VisitStorageService.add(visitWithScore, projectId: projectId);
         if (mounted) Navigator.pop(context);
       } else {
-        final blockers = ScoreService.detectBlockers(visitWithScore, widget.profile);
+        final blockers =
+            ScoreService.detectBlockers(visitWithScore, widget.profile);
         await Navigator.pushReplacementNamed(
           context,
           AppRoutes.visitSummary,
@@ -811,8 +811,7 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
               ExteriorSpacesCard(
                 key: const ValueKey('exterior_spaces_card'),
                 value: _exteriorSpaces,
-                onChanged: (spaces) =>
-                    setState(() => _exteriorSpaces = spaces),
+                onChanged: (spaces) => setState(() => _exteriorSpaces = spaces),
               ),
               const SizedBox(height: DSpacing.sm),
             ],
@@ -923,8 +922,9 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
   ];
 
   Widget _buildFeelingPicker() {
-    final label =
-        _feelings.firstWhere((f) => f.$1 == _feeling, orElse: () => _feelings[2]).$3;
+    final label = _feelings
+        .firstWhere((f) => f.$1 == _feeling, orElse: () => _feelings[2])
+        .$3;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: DSpacing.md),
@@ -1021,4 +1021,3 @@ class _AnsweredBadge extends StatelessWidget {
     );
   }
 }
-

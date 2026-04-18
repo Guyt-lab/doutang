@@ -31,8 +31,7 @@ class _RenovationCardState extends State<RenovationCard> {
   @override
   void initState() {
     super.initState();
-    _notesController =
-        TextEditingController(text: widget.answers.notes ?? '');
+    _notesController = TextEditingController(text: widget.answers.notes ?? '');
   }
 
   @override
@@ -259,12 +258,10 @@ class _RenovationCardState extends State<RenovationCard> {
                           l.$2,
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                            color: isSelected
-                                ? l.$3
-                                : DoutangTheme.textSecondary,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w400,
+                            color:
+                                isSelected ? l.$3 : DoutangTheme.textSecondary,
                           ),
                         ),
                       ),

@@ -117,7 +117,8 @@ class AppRoutes {
 
         // Contact annonce : attend un Listing.
         listingContact: (context) {
-          final listing = ModalRoute.of(context)?.settings.arguments as Listing?;
+          final listing =
+              ModalRoute.of(context)?.settings.arguments as Listing?;
           return ListingContactScreen(
             listing: listing ??
                 Listing(title: 'Annonce sans titre', addedBy: 'demo'),
@@ -130,7 +131,8 @@ class AppRoutes {
 
         // Config questionnaire : attend un UserProfile.
         questionnaireConfig: (context) {
-          final profile = ModalRoute.of(context)?.settings.arguments as UserProfile?;
+          final profile =
+              ModalRoute.of(context)?.settings.arguments as UserProfile?;
           return QuestionnaireConfigScreen(
             profile: profile ?? UserProfile(owner: 'Moi'),
           );

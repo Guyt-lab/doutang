@@ -177,8 +177,7 @@ class ListingParserService {
       floor = int.tryParse(
           floorM.group(1) ?? floorM.group(2) ?? floorM.group(3) ?? '');
     }
-    if (floor == null &&
-        RegExp(r'rez[\s-]de[\s-]chauss').hasMatch(text)) {
+    if (floor == null && RegExp(r'rez[\s-]de[\s-]chauss').hasMatch(text)) {
       floor = 0;
     }
 
@@ -369,8 +368,8 @@ class ListingParserService {
       final withEuro = _price(content);
       if (withEuro != null) return withEuro;
       // Contenu sans €, juste un nombre (ex : "1 350")
-      final numOnly =
-          RegExp(r'^[\s\u00a0]*(\d[\d\s\u00a0]*\d|\d+)[\s\u00a0]*$').firstMatch(content);
+      final numOnly = RegExp(r'^[\s\u00a0]*(\d[\d\s\u00a0]*\d|\d+)[\s\u00a0]*$')
+          .firstMatch(content);
       if (numOnly != null) {
         return double.tryParse(
           numOnly.group(1)!.replaceAll(RegExp(r'[\s\u00a0]'), ''),

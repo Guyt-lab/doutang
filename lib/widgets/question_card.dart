@@ -184,8 +184,7 @@ class _QuestionCardState extends State<QuestionCard> {
         const SizedBox(width: DSpacing.sm),
         _ynButton(label: 'Non', target: false, current: current),
         const SizedBox(width: DSpacing.sm),
-        _ynButton(label: '?', target: null, current: current,
-            isSkip: true),
+        _ynButton(label: '?', target: null, current: current, isSkip: true),
       ],
     );
   }

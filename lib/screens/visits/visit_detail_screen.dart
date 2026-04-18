@@ -96,8 +96,18 @@ class _VisitDetailScreenState extends State<VisitDetailScreen> {
   String _formatDateFull(DateTime dt) {
     const months = [
       '',
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
     ];
     return '${dt.day} ${months[dt.month]} ${dt.year}';
   }
@@ -187,7 +197,9 @@ class _VisitDetailScreenState extends State<VisitDetailScreen> {
     // Pass 2: unmatched answers fall back to 's8'
     for (final entry in answerMap.entries) {
       if (!consumed.contains(entry.key)) {
-        result.putIfAbsent('s8', () => []).add((text: entry.key, value: entry.value));
+        result
+            .putIfAbsent('s8', () => [])
+            .add((text: entry.key, value: entry.value));
       }
     }
 
@@ -563,8 +575,7 @@ class _SectionAnswerTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: DoutangTheme.primarySurface,
                 borderRadius: BorderRadius.circular(10),
@@ -693,7 +704,8 @@ class _RenovationCard extends StatelessWidget {
 
   const _RenovationCard({required this.renovation});
 
-  static const _postes = <(String, RenovationLevel? Function(RenovationAnswers))>[
+  static const _postes =
+      <(String, RenovationLevel? Function(RenovationAnswers))>[
     ('Sols', _floors),
     ('Murs & peintures', _walls),
     ('Salle de bain', _bathroom),

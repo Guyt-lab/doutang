@@ -69,8 +69,7 @@ class Visit {
         listingId: json['listing_id'] as String,
         owner: json['owner'] as String,
         visitedAt: DateTime.parse(json['visited_at'] as String),
-        answers: VisitAnswers.fromJson(
-            json['answers'] as Map<String, dynamic>),
+        answers: VisitAnswers.fromJson(json['answers'] as Map<String, dynamic>),
         feeling: (json['feeling'] as num).toInt(),
         score: (json['score'] as num).toDouble(),
         photos: List<String>.from(json['photos'] as List? ?? []),
@@ -697,7 +696,8 @@ class VisitAnswers {
         vmcKitchen: json['vmc_kitchen'] as bool?,
         bathroomFeatures: json['bathroom_features'] as String?,
         outdoorSurface: json['outdoor_surface'] as String?,
-        outdoorNeighborExposure: (json['outdoor_neighbor_exposure'] as num?)?.toInt(),
+        outdoorNeighborExposure:
+            (json['outdoor_neighbor_exposure'] as num?)?.toInt(),
         outdoorSunExposure: (json['outdoor_sun_exposure'] as num?)?.toInt(),
         outdoorViewQuality: (json['outdoor_view_quality'] as num?)?.toInt(),
         // v3
@@ -717,7 +717,8 @@ class VisitAnswers {
         eauStagnante: json['eau_stagnante'] as bool?,
         drains: json['drains'] as bool?,
         tracesInondation: json['traces_inondation'] as bool?,
-        terrainVoisinsProximite: (json['terrain_voisins_proximite'] as num?)?.toInt(),
+        terrainVoisinsProximite:
+            (json['terrain_voisins_proximite'] as num?)?.toInt(),
         incidentsVoisins: json['incidents_voisins'] as bool?,
         arbresProches: json['arbres_proches'] as bool?,
         orientationTerrain: json['orientation_terrain'] as String?,

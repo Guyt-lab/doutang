@@ -118,8 +118,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (index) =>
-            setState(() => _currentIndex = index),
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
         destinations: _destinations,
         backgroundColor: Colors.white,
         indicatorColor: DoutangTheme.primarySurface,

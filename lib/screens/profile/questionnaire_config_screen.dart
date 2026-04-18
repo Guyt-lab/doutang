@@ -54,8 +54,7 @@ class QuestionnaireConfigScreen extends StatefulWidget {
       _QuestionnaireConfigScreenState();
 }
 
-class _QuestionnaireConfigScreenState
-    extends State<QuestionnaireConfigScreen> {
+class _QuestionnaireConfigScreenState extends State<QuestionnaireConfigScreen> {
   late Set<String> _disabled;
   late List<QuestionTemplate> _custom;
   late Map<String, List<ProjectFilter>> _tagOverrides;
@@ -89,9 +88,8 @@ class _QuestionnaireConfigScreenState
   }
 
   Map<String, List<QuestionTemplate>> _grouped() {
-    final all = [...kDefaultQuestions, ..._custom]
-        .where(_matchesFilter)
-        .toList();
+    final all =
+        [...kDefaultQuestions, ..._custom].where(_matchesFilter).toList();
     final map = <String, List<QuestionTemplate>>{};
     for (final q in all) {
       map.putIfAbsent(q.section, () => []).add(q);
@@ -164,21 +162,22 @@ class _QuestionnaireConfigScreenState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  editing == null ? 'Nouvelle question' : 'Modifier la question',
+                  editing == null
+                      ? 'Nouvelle question'
+                      : 'Modifier la question',
                   style: Theme.of(ctx).textTheme.titleMedium,
                 ),
                 const SizedBox(height: DSpacing.md),
                 TextField(
                   controller: textCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Libellé *'),
+                  decoration: const InputDecoration(labelText: 'Libellé *'),
                   textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: DSpacing.sm),
                 TextField(
                   controller: hintCtrl,
-                  decoration: const InputDecoration(
-                      labelText: 'Aide (optionnel)'),
+                  decoration:
+                      const InputDecoration(labelText: 'Aide (optionnel)'),
                 ),
                 const SizedBox(height: DSpacing.md),
                 // Section
@@ -350,8 +349,8 @@ class _QuestionnaireConfigScreenState
             height: 48,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: DSpacing.md, vertical: 6),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: DSpacing.md, vertical: 6),
               children: [
                 _FilterChip(
                   label: 'Toutes',
@@ -381,8 +380,7 @@ class _QuestionnaireConfigScreenState
               children: [
                 for (final section in allSections)
                   if (grouped.containsKey(section)) ...[
-                    _SectionHeader(
-                        label: _sectionLabels[section] ?? section),
+                    _SectionHeader(label: _sectionLabels[section] ?? section),
                     for (final q in grouped[section]!)
                       _QuestionTile(
                         question: q,
@@ -453,7 +451,8 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.12) : DoutangTheme.surface,
+          color:
+              selected ? color.withValues(alpha: 0.12) : DoutangTheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
               color: selected ? color : DoutangTheme.border,
@@ -479,7 +478,8 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(DSpacing.md, DSpacing.md, DSpacing.md, 2),
+      padding:
+          const EdgeInsets.fromLTRB(DSpacing.md, DSpacing.md, DSpacing.md, 2),
       child: Text(
         label.toUpperCase(),
         style: const TextStyle(
@@ -517,8 +517,8 @@ class _QuestionTile extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1.0 : 0.45,
       child: Container(
-        margin: const EdgeInsets.symmetric(
-            horizontal: DSpacing.md, vertical: 2),
+        margin:
+            const EdgeInsets.symmetric(horizontal: DSpacing.md, vertical: 2),
         decoration: BoxDecoration(
           color: DoutangTheme.cardBg,
           borderRadius: DRadius.card,
@@ -581,8 +581,7 @@ class _QuestionTile extends StatelessWidget {
                 runSpacing: 4,
                 children: _filterLabels.entries.map((e) {
                   final active = effectiveTags.contains(e.key);
-                  final color =
-                      _filterColors[e.key] ?? DoutangTheme.primary;
+                  final color = _filterColors[e.key] ?? DoutangTheme.primary;
                   return GestureDetector(
                     onTap: () => onTagToggle(e.key),
                     child: AnimatedContainer(
@@ -603,9 +602,8 @@ class _QuestionTile extends StatelessWidget {
                         e.value,
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight: active
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                          fontWeight:
+                              active ? FontWeight.w600 : FontWeight.w400,
                           color: active ? color : DoutangTheme.textHint,
                         ),
                       ),

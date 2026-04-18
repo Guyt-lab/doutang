@@ -30,8 +30,7 @@ class _VisitsScreenState extends State<VisitsScreen> {
   Future<void> _load() async {
     final projectId = await ProjectService.getActiveId() ?? '';
     final visits = await VisitStorageService.load(projectId: projectId);
-    final listings =
-        await ListingStorageService.load(projectId: projectId);
+    final listings = await ListingStorageService.load(projectId: projectId);
     if (mounted) {
       setState(() {
         _visits = visits..sort((a, b) => b.visitedAt.compareTo(a.visitedAt));

@@ -94,14 +94,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             children: [
                               Text(
                                 _project?.name ?? 'Aucun projet actif',
-                                style:
-                                    Theme.of(context).textTheme.titleMedium,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               if (_project != null)
                                 Text(
                                   _projectSubtitle(_project!),
-                                  style:
-                                      Theme.of(context).textTheme.bodySmall,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                             ],
                           ),
@@ -140,13 +138,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ListTile(
                         leading: const Icon(Icons.checklist_outlined),
                         title: const Text('Configurer le questionnaire'),
-                        subtitle: const Text('Questions, filtres, questions custom'),
+                        subtitle:
+                            const Text('Questions, filtres, questions custom'),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.pushNamed(
                           context,
                           AppRoutes.questionnaireConfig,
-                          arguments:
-                              _profile ?? UserProfile(owner: 'Moi'),
+                          arguments: _profile ?? UserProfile(owner: 'Moi'),
                         ).then((_) => _load()),
                       ),
                       const Divider(height: 0),

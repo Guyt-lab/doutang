@@ -149,7 +149,8 @@ void main() {
           roomsMin: 2,
         ),
       );
-      final score = ScoreService.calculateMatchingScore(listing, profileWithCriteria);
+      final score =
+          ScoreService.calculateMatchingScore(listing, profileWithCriteria);
       expect(score, equals(1.0));
     });
   });

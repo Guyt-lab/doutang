@@ -89,7 +89,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
         // Pre-fill facts from existing listing
         final facts = arg.facts;
         if (facts.dpe != null) _dpeController.text = facts.dpe!;
-        if (facts.floor != null) _floorController.text = facts.floor!.toString();
+        if (facts.floor != null)
+          _floorController.text = facts.floor!.toString();
         if (facts.charges != null) {
           _chargesController.text = facts.charges!.toInt().toString();
         }
@@ -174,7 +175,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
       // Facts
       if (parsed.dpe != null) _dpeController.text = parsed.dpe!;
-      if (parsed.floor != null) _floorController.text = parsed.floor!.toString();
+      if (parsed.floor != null)
+        _floorController.text = parsed.floor!.toString();
       if (parsed.charges != null) {
         _chargesController.text = parsed.charges!.toInt().toString();
       }
@@ -211,9 +213,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final url = _urlController.text.trim().isEmpty
-        ? null
-        : _urlController.text.trim();
+    final url =
+        _urlController.text.trim().isEmpty ? null : _urlController.text.trim();
 
     final projectId = await ProjectService.getActiveId() ?? '';
 
@@ -260,8 +261,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
     setState(() => _isSaving = true);
 
-    final profile = _profile ??
-        await ProfileStorageService.load(projectId: projectId);
+    final profile =
+        _profile ?? await ProfileStorageService.load(projectId: projectId);
     final owner = _editingListing?.addedBy ?? profile?.owner ?? 'Moi';
 
     final listing = Listing(
@@ -358,7 +359,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Modifier l\'annonce' : 'Ajouter une annonce'),
+        title:
+            Text(_isEditMode ? 'Modifier l\'annonce' : 'Ajouter une annonce'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(DSpacing.md),
@@ -479,7 +481,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     _KindChip(
                       label: 'Appartement',
                       icon: Icons.apartment_outlined,
-                      selected: _propertyKind == ListingPropertyKind.appartement,
+                      selected:
+                          _propertyKind == ListingPropertyKind.appartement,
                       onTap: () => setState(() => _propertyKind =
                           _propertyKind == ListingPropertyKind.appartement
                               ? null
@@ -583,9 +586,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : Text(_isEditMode
-                            ? 'Modifier'
-                            : 'Ajouter l\'annonce'),
+                        : Text(_isEditMode ? 'Modifier' : 'Ajouter l\'annonce'),
                   ),
                 ),
               ],
@@ -602,8 +603,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
         leading: const Icon(Icons.info_outline),
         title: const Text('Caractéristiques'),
         subtitle: const Text('DPE, étage, charges, équipements'),
-        childrenPadding: const EdgeInsets.fromLTRB(
-            DSpacing.md, 0, DSpacing.md, DSpacing.md),
+        childrenPadding:
+            const EdgeInsets.fromLTRB(DSpacing.md, 0, DSpacing.md, DSpacing.md),
         children: [
           Row(
             children: [
@@ -669,21 +670,36 @@ class _AddListingScreenState extends State<AddListingScreen> {
           _buildBoolRow(
             'Extérieurs',
             [
-              ('Balcon', _hasBalcony,
-                  () => setState(
-                      () => _hasBalcony = _hasBalcony == true ? null : true)),
-              ('Terrasse', _hasTerrace,
-                  () => setState(
-                      () => _hasTerrace = _hasTerrace == true ? null : true)),
-              ('Jardin', _hasGarden,
-                  () => setState(
-                      () => _hasGarden = _hasGarden == true ? null : true)),
-              ('Parking', _hasParking,
-                  () => setState(
-                      () => _hasParking = _hasParking == true ? null : true)),
-              ('Cave', _hasCellar,
-                  () => setState(
-                      () => _hasCellar = _hasCellar == true ? null : true)),
+              (
+                'Balcon',
+                _hasBalcony,
+                () => setState(
+                    () => _hasBalcony = _hasBalcony == true ? null : true)
+              ),
+              (
+                'Terrasse',
+                _hasTerrace,
+                () => setState(
+                    () => _hasTerrace = _hasTerrace == true ? null : true)
+              ),
+              (
+                'Jardin',
+                _hasGarden,
+                () => setState(
+                    () => _hasGarden = _hasGarden == true ? null : true)
+              ),
+              (
+                'Parking',
+                _hasParking,
+                () => setState(
+                    () => _hasParking = _hasParking == true ? null : true)
+              ),
+              (
+                'Cave',
+                _hasCellar,
+                () => setState(
+                    () => _hasCellar = _hasCellar == true ? null : true)
+              ),
             ],
           ),
         ],

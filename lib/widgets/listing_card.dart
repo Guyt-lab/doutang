@@ -45,8 +45,8 @@ class ListingCard extends StatelessWidget {
               Row(
                 children: [
                   if (listing.price != null) ...[
-                    Icon(Icons.euro, size: 14,
-                        color: DoutangTheme.textSecondary),
+                    Icon(Icons.euro,
+                        size: 14, color: DoutangTheme.textSecondary),
                     const SizedBox(width: 2),
                     Text(
                       '${listing.price!.toStringAsFixed(0)} €',
@@ -55,16 +55,16 @@ class ListingCard extends StatelessWidget {
                     const SizedBox(width: DSpacing.md),
                   ],
                   if (listing.surface != null) ...[
-                    Icon(Icons.square_foot, size: 14,
-                        color: DoutangTheme.textSecondary),
+                    Icon(Icons.square_foot,
+                        size: 14, color: DoutangTheme.textSecondary),
                     const SizedBox(width: 2),
                     Text('${listing.surface} m²',
                         style: Theme.of(context).textTheme.bodyMedium),
                     const SizedBox(width: DSpacing.md),
                   ],
                   if (listing.rooms != null) ...[
-                    Icon(Icons.meeting_room_outlined, size: 14,
-                        color: DoutangTheme.textSecondary),
+                    Icon(Icons.meeting_room_outlined,
+                        size: 14, color: DoutangTheme.textSecondary),
                     const SizedBox(width: 2),
                     Text('${listing.rooms}P',
                         style: Theme.of(context).textTheme.bodyMedium),
@@ -74,8 +74,8 @@ class ListingCard extends StatelessWidget {
               if (listing.address != null) ...[
                 const SizedBox(height: 4),
                 Row(children: [
-                  Icon(Icons.location_on_outlined, size: 13,
-                      color: DoutangTheme.textHint),
+                  Icon(Icons.location_on_outlined,
+                      size: 13, color: DoutangTheme.textHint),
                   const SizedBox(width: 2),
                   Text(listing.address!,
                       style: Theme.of(context).textTheme.bodySmall),
@@ -106,7 +106,8 @@ class ListingCard extends StatelessWidget {
                     ),
                   ],
                   if (visitScore != null) ...[
-                    if (matchingScore != null) const SizedBox(width: DSpacing.sm),
+                    if (matchingScore != null)
+                      const SizedBox(width: DSpacing.sm),
                     _VisitedBadge(score: visitScore!),
                   ],
                 ]),

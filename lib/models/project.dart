@@ -92,7 +92,8 @@ class DoutangProject {
     );
   }
 
-  String toFileContent() => const JsonEncoder.withIndent('  ').convert(toJson());
+  String toFileContent() =>
+      const JsonEncoder.withIndent('  ').convert(toJson());
 
   factory DoutangProject.fromFileContent(String content) =>
       DoutangProject.fromJson(jsonDecode(content) as Map<String, dynamic>);

@@ -259,8 +259,8 @@ void main() {
       const b = ListingFacts(surfaceTotal: 55, rooms: 2, dpe: 'C');
       final result = a.complement(b);
       expect(result.surfaceTotal, 60); // a gagne
-      expect(result.rooms, 3);        // a gagne
-      expect(result.dpe, 'C');        // b complète
+      expect(result.rooms, 3); // a gagne
+      expect(result.dpe, 'C'); // b complète
     });
 
     test('les champs null de this sont remplis par other', () {

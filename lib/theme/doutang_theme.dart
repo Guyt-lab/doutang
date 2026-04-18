@@ -4,10 +4,10 @@ class DoutangTheme {
   DoutangTheme._();
 
   // Palette
-  static const Color primary = Color(0xFF2D6A4F);      // vert foncé — nid, nature
-  static const Color primaryLight = Color(0xFF52B788);  // vert clair
+  static const Color primary = Color(0xFF2D6A4F); // vert foncé — nid, nature
+  static const Color primaryLight = Color(0xFF52B788); // vert clair
   static const Color primarySurface = Color(0xFFD8F3DC); // surface verte
-  static const Color accent = Color(0xFFE9C46A);        // ambre — chaleur
+  static const Color accent = Color(0xFFE9C46A); // ambre — chaleur
   static const Color danger = Color(0xFFE63946);
   static const Color surface = Color(0xFFF8F9FA);
   static const Color cardBg = Color(0xFFFFFFFF);
@@ -114,8 +114,10 @@ class DoutangTheme {
         chipTheme: ChipThemeData(
           backgroundColor: DoutangTheme.surface,
           selectedColor: DoutangTheme.primary,
-          labelStyle: const TextStyle(fontSize: 13, color: DoutangTheme.textPrimary),
-          secondaryLabelStyle: const TextStyle(fontSize: 13, color: Colors.white),
+          labelStyle:
+              const TextStyle(fontSize: 13, color: DoutangTheme.textPrimary),
+          secondaryLabelStyle:
+              const TextStyle(fontSize: 13, color: Colors.white),
           side: const BorderSide(color: DoutangTheme.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),

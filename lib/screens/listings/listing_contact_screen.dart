@@ -147,7 +147,9 @@ class _ListingContactScreenState extends State<ListingContactScreen> {
                     TextFormField(
                       controller: _contactNameController,
                       decoration: InputDecoration(
-                        labelText: _isAgency ? "Nom du négociateur" : "Nom du propriétaire",
+                        labelText: _isAgency
+                            ? "Nom du négociateur"
+                            : "Nom du propriétaire",
                         prefixIcon: const Icon(Icons.person_outline),
                       ),
                       textCapitalization: TextCapitalization.words,

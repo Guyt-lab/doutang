@@ -57,7 +57,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         _projects = projects;
         _activeId = activeId;
         _counts = {
-          for (final c in counts) c.id: (listings: c.listings, visits: c.visits),
+          for (final c in counts)
+            c.id: (listings: c.listings, visits: c.visits),
         };
         _isLoading = false;
       });
@@ -337,7 +338,7 @@ class _ProjectCard extends StatelessWidget {
 
 class _CreateProjectSheet extends StatefulWidget {
   final Future<void> Function(
-      String name, ProjectType type, PropertyType propertyType, int color)
+          String name, ProjectType type, PropertyType propertyType, int color)
       onCreate;
 
   const _CreateProjectSheet({required this.onCreate});
@@ -422,14 +423,11 @@ class _CreateProjectSheetState extends State<_CreateProjectSheet> {
             child: SegmentedButton<PropertyType>(
               segments: const [
                 ButtonSegment(
-                    value: PropertyType.appartement,
-                    label: Text('Appt')),
+                    value: PropertyType.appartement, label: Text('Appt')),
                 ButtonSegment(
-                    value: PropertyType.maison,
-                    label: Text('Maison')),
+                    value: PropertyType.maison, label: Text('Maison')),
                 ButtonSegment(
-                    value: PropertyType.lesDeux,
-                    label: Text('Les deux')),
+                    value: PropertyType.lesDeux, label: Text('Les deux')),
               ],
               selected: {_propertyType},
               onSelectionChanged: (s) =>
@@ -459,8 +457,7 @@ class _CreateProjectSheetState extends State<_CreateProjectSheet> {
                           : null,
                     ),
                     child: selected
-                        ? const Icon(Icons.check,
-                            color: Colors.white, size: 18)
+                        ? const Icon(Icons.check, color: Colors.white, size: 18)
                         : null,
                   ),
                 ),

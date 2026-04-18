@@ -88,8 +88,7 @@ void main() {
       );
 
       await ProfileStorageService.save(profile, basePath: tempDir.path);
-      final restored =
-          await ProfileStorageService.load(basePath: tempDir.path);
+      final restored = await ProfileStorageService.load(basePath: tempDir.path);
 
       expect(restored, isNotNull);
       expect(restored!.owner, equals('Alice'));
@@ -109,8 +108,7 @@ void main() {
 
       await ProfileStorageService.save(v1, basePath: tempDir.path);
       await ProfileStorageService.save(v2, basePath: tempDir.path);
-      final restored =
-          await ProfileStorageService.load(basePath: tempDir.path);
+      final restored = await ProfileStorageService.load(basePath: tempDir.path);
 
       expect(restored!.owner, equals('V2'));
     });
@@ -120,8 +118,7 @@ void main() {
       await ProfileStorageService.save(profile, basePath: tempDir.path);
 
       await ProfileStorageService.delete(basePath: tempDir.path);
-      final result =
-          await ProfileStorageService.load(basePath: tempDir.path);
+      final result = await ProfileStorageService.load(basePath: tempDir.path);
 
       expect(result, isNull);
     });

@@ -193,7 +193,6 @@ const kQCoupDeCoeur = 'q_coup_de_coeur';
 const kQPointRedhibitoire = 'q_point_redhibitoire';
 
 const List<QuestionTemplate> kDefaultQuestions = [
-
   // ── s1 : Transports & Quartier ────────────────────────────────────────────
 
   QuestionTemplate(

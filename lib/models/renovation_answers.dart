@@ -52,8 +52,10 @@ class RenovationAnswers {
     final cosmeticCount =
         levels.where((l) => l == RenovationLevel.cosmetic).length;
 
-    if (structuralCount >= 1 || importantCount >= 3) return BudgetRange.above20k;
-    if (importantCount >= 1 || cosmeticCount >= 3) return BudgetRange.between5and20k;
+    if (structuralCount >= 1 || importantCount >= 3)
+      return BudgetRange.above20k;
+    if (importantCount >= 1 || cosmeticCount >= 3)
+      return BudgetRange.between5and20k;
     if (cosmeticCount >= 1) return BudgetRange.under5k;
     return BudgetRange.none;
   }
