@@ -103,6 +103,82 @@ const kQOutdoorNeighborExposure = 'q_outdoor_neighbor_exposure';
 const kQOutdoorSunExposure = 'q_outdoor_sun_exposure';
 const kQOutdoorViewQuality = 'q_outdoor_view_quality';
 
+// s1 — Transports (conditionnel)
+const kQTransportStations = 'q_transport_stations';
+
+// s8 — Administration complémentaire
+const kQTaxeHabitation = 'q_taxe_habitation';
+const kQCoproprietieMaison = 'q_copropriete_maison';
+
+// s_facade — Extérieur & Structure (maison)
+const kQFacadeFissures = 'q_facade_fissures';
+const kQSolAffaissement = 'q_sol_affaissement';
+const kQMursDeformation = 'q_murs_deformation';
+const kQHumiditeExterieure = 'q_humidite_exterieure';
+
+// s_toiture — Toiture (maison)
+const kQToitureTuiles = 'q_toiture_tuiles';
+const kQGoutieres = 'q_goutieres';
+const kQCharpente = 'q_charpente';
+const kQIsolationToiture = 'q_isolation_toiture';
+const kQToitureRenovation = 'q_toiture_renovation';
+
+// s_drainage — Drainage & Eau (maison)
+const kQTerrainPente = 'q_terrain_pente';
+const kQEauStagnante = 'q_eau_stagnante';
+const kQDrains = 'q_drains';
+const kQTracesInondation = 'q_traces_inondation';
+
+// s_terrain — Terrain & Environnement (maison)
+const kQTerrainVoisinsProximite = 'q_terrain_voisins_proximite';
+const kQIncidentsVoisins = 'q_incidents_voisins';
+const kQArbresProches = 'q_arbres_proches';
+const kQOrientationTerrain = 'q_orientation_terrain';
+const kQNuisancesTerrain = 'q_nuisances_terrain';
+
+// s_urbanisme — Urbanisme (maison, apres)
+const kQProjetsConstruction = 'q_projets_construction';
+const kQPlu = 'q_plu';
+const kQTerrainsConstructibles = 'q_terrains_constructibles';
+
+// s_raccordements — Raccordements (maison)
+const kQRaccordementEauElecGaz = 'q_raccordement_eau_elec_gaz';
+const kQToutALegout = 'q_tout_a_legout';
+const kQFibreMaison = 'q_fibre_maison';
+const kQBranchementsEtat = 'q_branchements_etat';
+
+// s_facade_ext — Façade & Isolation extérieure (maison)
+const kQCrepiEtat = 'q_crepi_etat';
+const kQFacadeHumidite = 'q_facade_humidite';
+const kQIte = 'q_ite';
+
+// s_acces — Accès & Stationnement (maison)
+const kQAccesRoute = 'q_acces_route';
+const kQStationnementMaison = 'q_stationnement_maison';
+const kQServitudes = 'q_servitudes';
+
+// s_risques — Risques naturels (maison, apres)
+const kQErpConsulte = 'q_erp_consulte';
+const kQRisqueInondation = 'q_risque_inondation';
+const kQRisqueGlissement = 'q_risque_glissement';
+const kQPollutionSols = 'q_pollution_sols';
+const kQNuisancesEnvironnement = 'q_nuisances_environnement';
+
+// s_diagnostics — Diagnostics techniques (achat + appartement, apres)
+const kQRavelementDate = 'q_ravalement_date';
+const kQTravauxVotes = 'q_travaux_votes';
+const kQProceduresCopro = 'q_procedures_copro';
+const kQEvacuationsCommunes = 'q_evacuations_communes';
+const kQFibreImmeuble = 'q_fibre_immeuble';
+const kQDpeNiveau = 'q_dpe_niveau';
+const kQElecAge = 'q_elec_age';
+const kQDiagElec = 'q_diag_elec';
+const kQGazAge = 'q_gaz_age';
+const kQDiagGaz = 'q_diag_gaz';
+const kQDateConstruction = 'q_date_construction';
+const kQDiagAmiante = 'q_diag_amiante';
+const kQDiagPlomb = 'q_diag_plomb';
+
 // s8 — Aspects pratiques & Administration
 const kQRentPrice = 'q_rent_price';
 const kQChargesIncluded = 'q_charges_included';
@@ -813,6 +889,497 @@ const List<QuestionTemplate> kDefaultQuestions = [
     withPhoto: true,
   ),
 
+  // ── s_facade : Extérieur & Structure ─────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQFacadeFissures,
+    section: 's_facade',
+    text: 'Présence de fissures en façade ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQSolAffaissement,
+    section: 's_facade',
+    text: 'Affaissement du sol ou de la maison visible ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQMursDeformation,
+    section: 's_facade',
+    text: 'Déformation des murs ou de la façade ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQHumiditeExterieure,
+    section: 's_facade',
+    text: 'Traces d\'humidité extérieure ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_toiture : Toiture ───────────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQToitureTuiles,
+    section: 's_toiture',
+    text: 'État des tuiles/ardoises (cassées, mousse) ?',
+    hint: '5 = parfait état, 1 = remplacement urgent',
+    level: QuestionLevel.critical,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQGoutieres,
+    section: 's_toiture',
+    text: 'Gouttières en bon état (fuites, écoulement) ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQCharpente,
+    section: 's_toiture',
+    text: 'Charpente visible et en bon état ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQIsolationToiture,
+    section: 's_toiture',
+    text: 'Isolation sous toiture présente ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQToitureRenovation,
+    section: 's_toiture',
+    text: 'Rénovation toiture à prévoir ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_drainage : Drainage & Eau ───────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQTerrainPente,
+    section: 's_drainage',
+    text: 'Terrain en pente vers la maison ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQEauStagnante,
+    section: 's_drainage',
+    text: 'Eau stagnante visible après pluie ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQDrains,
+    section: 's_drainage',
+    text: 'Présence de drains ou caniveaux ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQTracesInondation,
+    section: 's_drainage',
+    text: 'Traces d\'inondation ou remontées d\'eau ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_terrain : Terrain & Environnement ──────────────────────────────────
+
+  QuestionTemplate(
+    id: kQTerrainVoisinsProximite,
+    section: 's_terrain',
+    text: 'Proximité des voisins (vis-à-vis) ?',
+    hint: '5 = très intimiste, 1 = très exposé',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQIncidentsVoisins,
+    section: 's_terrain',
+    text: 'Incidents connus avec les voisins ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQArbresProches,
+    section: 's_terrain',
+    text: 'Arbres proches (racines, risque chute) ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQOrientationTerrain,
+    section: 's_terrain',
+    text: 'Orientation et ensoleillement',
+    hint: 'Sud, Sud-Ouest, Est, Nord…',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQNuisancesTerrain,
+    section: 's_terrain',
+    text: 'Nuisances sonores (route, train, bars)',
+    hint: '5 = très calme, 1 = très bruyant',
+    level: QuestionLevel.critical,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_raccordements : Raccordements ───────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQRaccordementEauElecGaz,
+    section: 's_raccordements',
+    text: 'Eau, électricité, gaz raccordés ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQToutALegout,
+    section: 's_raccordements',
+    text: 'Tout-à-l\'égout ou fosse septique ?',
+    hint: 'Précisez le type et l\'état',
+    level: QuestionLevel.critical,
+    type: QuestionType.text,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQFibreMaison,
+    section: 's_raccordements',
+    text: 'Fibre internet disponible ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQBranchementsEtat,
+    section: 's_raccordements',
+    text: 'État des branchements visibles',
+    hint: '5 = parfait état, 1 = vétuste',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_facade_ext : Façade & Isolation extérieure ──────────────────────────
+
+  QuestionTemplate(
+    id: kQCrepiEtat,
+    section: 's_facade_ext',
+    text: 'État du crépi ou des murs extérieurs',
+    hint: '5 = impeccable, 1 = dégradé',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQFacadeHumidite,
+    section: 's_facade_ext',
+    text: 'Traces de fissures ou d\'humidité en façade',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    withPhoto: true,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQIte,
+    section: 's_facade_ext',
+    text: 'Isolation thermique par l\'extérieur (ITE) présente ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_acces : Accès & Stationnement ──────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQAccesRoute,
+    section: 's_acces',
+    text: 'Facilité d\'accès (route étroite, pente) ?',
+    hint: '5 = très accessible, 1 = difficile',
+    level: QuestionLevel.important,
+    type: QuestionType.score,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQStationnementMaison,
+    section: 's_acces',
+    text: 'Stationnement disponible (garage, rue) ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.pendant,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQServitudes,
+    section: 's_acces',
+    text: 'Servitudes de passage éventuelles ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_urbanisme : Urbanisme ───────────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQProjetsConstruction,
+    section: 's_urbanisme',
+    text: 'Projets de construction à proximité ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQPlu,
+    section: 's_urbanisme',
+    text: 'PLU consulté (Plan Local d\'Urbanisme) ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQTerrainsConstructibles,
+    section: 's_urbanisme',
+    text: 'Terrains constructibles autour ?',
+    level: QuestionLevel.nice,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_risques : Risques naturels ──────────────────────────────────────────
+
+  QuestionTemplate(
+    id: kQErpConsulte,
+    section: 's_risques',
+    text: 'ERP consulté (État des Risques et Pollutions) ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQRisqueInondation,
+    section: 's_risques',
+    text: 'Zone inondable ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQRisqueGlissement,
+    section: 's_risques',
+    text: 'Risque de glissement de terrain ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQPollutionSols,
+    section: 's_risques',
+    text: 'Pollution des sols connue ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+  QuestionTemplate(
+    id: kQNuisancesEnvironnement,
+    section: 's_risques',
+    text: 'Nuisances environnementales (lignes HT, antennes) ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.maison],
+  ),
+
+  // ── s_diagnostics : Diagnostics techniques ────────────────────────────────
+
+  QuestionTemplate(
+    id: kQRavelementDate,
+    section: 's_diagnostics',
+    text: 'Date du dernier ravalement de façade',
+    hint: 'Demandez au syndic',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQTravauxVotes,
+    section: 's_diagnostics',
+    text: 'Des travaux sont-ils votés en copropriété ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQProceduresCopro,
+    section: 's_diagnostics',
+    text: 'Procédures en cours (litiges, non-paiement) ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQEvacuationsCommunes,
+    section: 's_diagnostics',
+    text: 'Évacuations d\'eau dans les parties communes ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQFibreImmeuble,
+    section: 's_diagnostics',
+    text: 'Fibre optique installée dans l\'immeuble ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDpeNiveau,
+    section: 's_diagnostics',
+    text: 'Niveau DPE et date de réalisation',
+    hint: 'Ex : C — réalisé le 01/01/2022',
+    level: QuestionLevel.critical,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQElecAge,
+    section: 's_diagnostics',
+    text: 'Installation électrique de plus de 15 ans ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDiagElec,
+    section: 's_diagnostics',
+    text: 'Diagnostic électrique réalisé ? Date ?',
+    hint: 'Obligatoire si installation > 15 ans',
+    level: QuestionLevel.critical,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQGazAge,
+    section: 's_diagnostics',
+    text: 'Installation gaz de plus de 15 ans ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDiagGaz,
+    section: 's_diagnostics',
+    text: 'Diagnostic gaz réalisé ? Date ?',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDateConstruction,
+    section: 's_diagnostics',
+    text: 'Date de construction du bâtiment',
+    hint: 'Vérifiez sur le cadastre ou l\'acte notarié',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDiagAmiante,
+    section: 's_diagnostics',
+    text: 'Bâtiment antérieur à 1997 → diagnostic amiante réalisé ? Date ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+  QuestionTemplate(
+    id: kQDiagPlomb,
+    section: 's_diagnostics',
+    text: 'Bâtiment antérieur à 1949 → diagnostic plomb réalisé ? Date ?',
+    level: QuestionLevel.critical,
+    type: QuestionType.text,
+    timing: QuestionTiming.apres,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.appartement],
+  ),
+
   // ── s8 : Aspects pratiques & Administration ───────────────────────────────
 
   QuestionTemplate(
@@ -872,6 +1439,25 @@ const List<QuestionTemplate> kDefaultQuestions = [
     level: QuestionLevel.important,
     type: QuestionType.text,
     timing: QuestionTiming.avant,
+  ),
+  QuestionTemplate(
+    id: kQTaxeHabitation,
+    section: 's8',
+    text: 'Taxe d\'habitation annuelle ?',
+    hint: 'En €',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.location],
+  ),
+  QuestionTemplate(
+    id: kQCoproprietieMaison,
+    section: 's8',
+    text: 'Le bien est-il en copropriété ?',
+    level: QuestionLevel.important,
+    type: QuestionType.yesNo,
+    timing: QuestionTiming.avant,
+    appliesTo: [ProjectFilter.achat, ProjectFilter.maison],
   ),
   QuestionTemplate(
     id: kQLandTax,

@@ -240,6 +240,71 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     putStr(kQCoupDeCoeur, a.coupDeCoeur);
     putStr(kQPointRedhibitoire, a.pointRedhibitoire);
 
+    // v3 — transport conditionnel
+    putStr(kQTransportStations, a.transportStations);
+    // v3 — admin
+    putStr(kQTaxeHabitation, a.taxeHabitation);
+    put(kQCoproprietieMaison, a.coproprieteMaison);
+    // v3 — extérieur structure maison
+    put(kQFacadeFissures, a.facadeFissures);
+    put(kQSolAffaissement, a.solAffaissement);
+    put(kQMursDeformation, a.mursDeformation);
+    put(kQHumiditeExterieure, a.humiditeExterieure);
+    // v3 — toiture
+    put(kQToitureTuiles, a.toitureTuiles);
+    put(kQGoutieres, a.goutieres);
+    put(kQCharpente, a.charpente);
+    put(kQIsolationToiture, a.isolationToiture);
+    put(kQToitureRenovation, a.toitureRenovation);
+    // v3 — drainage
+    put(kQTerrainPente, a.terrainPente);
+    put(kQEauStagnante, a.eauStagnante);
+    put(kQDrains, a.drains);
+    put(kQTracesInondation, a.tracesInondation);
+    // v3 — terrain
+    put(kQTerrainVoisinsProximite, a.terrainVoisinsProximite);
+    put(kQIncidentsVoisins, a.incidentsVoisins);
+    put(kQArbresProches, a.arbresProches);
+    putStr(kQOrientationTerrain, a.orientationTerrain);
+    put(kQNuisancesTerrain, a.nuisancesTerrain);
+    // v3 — raccordements
+    put(kQRaccordementEauElecGaz, a.raccordementEauElecGaz);
+    putStr(kQToutALegout, a.toutALegout);
+    put(kQFibreMaison, a.fibreMaison);
+    put(kQBranchementsEtat, a.branchementsEtat);
+    // v3 — façade ext
+    put(kQCrepiEtat, a.crepiEtat);
+    put(kQFacadeHumidite, a.facadeHumidite);
+    put(kQIte, a.ite);
+    // v3 — accès
+    put(kQAccesRoute, a.accesRoute);
+    put(kQStationnementMaison, a.stationnementMaison);
+    put(kQServitudes, a.servitudes);
+    // v3 — urbanisme
+    put(kQProjetsConstruction, a.projetsConstruction);
+    put(kQPlu, a.plu);
+    put(kQTerrainsConstructibles, a.terrainsConstructibles);
+    // v3 — risques
+    put(kQErpConsulte, a.erpConsulte);
+    put(kQRisqueInondation, a.risqueInondation);
+    put(kQRisqueGlissement, a.risqueGlissement);
+    put(kQPollutionSols, a.pollutionSols);
+    put(kQNuisancesEnvironnement, a.nuisancesEnvironnement);
+    // v3 — diagnostics
+    putStr(kQRavelementDate, a.ravelementDate);
+    put(kQTravauxVotes, a.travauxVotes);
+    put(kQProceduresCopro, a.proceduresCopro);
+    put(kQEvacuationsCommunes, a.evacuationsCommunes);
+    put(kQFibreImmeuble, a.fibreImmeuble);
+    putStr(kQDpeNiveau, a.dpeNiveau);
+    put(kQElecAge, a.elecAge);
+    putStr(kQDiagElec, a.diagElec);
+    put(kQGazAge, a.gazAge);
+    putStr(kQDiagGaz, a.diagGaz);
+    putStr(kQDateConstruction, a.dateConstruction);
+    putStr(kQDiagAmiante, a.diagAmiante);
+    putStr(kQDiagPlomb, a.diagPlomb);
+
     _feeling = v.feeling;
     if (a.renovation != null) _renovation = a.renovation!;
     if (a.exteriorSpaces != null) {
@@ -268,6 +333,20 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     's_heating': 'Chauffage',
     's_water': 'Eau',
     's7': 'Espaces extérieurs',
+    // Maison — pendant
+    's_facade': 'Extérieur & Structure',
+    's_toiture': 'Toiture',
+    's_drainage': 'Drainage & Eau',
+    's_terrain': 'Terrain & Environnement',
+    's_raccordements': 'Raccordements',
+    's_facade_ext': 'Façade & Isolation extérieure',
+    's_acces': 'Accès & Stationnement',
+    // Maison — après
+    's_urbanisme': 'Urbanisme',
+    's_risques': 'Risques naturels',
+    // Achat + appartement — après
+    's_diagnostics': 'Diagnostics techniques',
+    // Toujours en dernier dans Avant
     's8': 'Aspects pratiques',
   };
 
@@ -285,8 +364,28 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     's_heating': Icons.thermostat_outlined,
     's_water': Icons.water_drop_outlined,
     's7': Icons.yard_outlined,
+    's_facade': Icons.foundation_outlined,
+    's_toiture': Icons.roofing,
+    's_drainage': Icons.water_outlined,
+    's_terrain': Icons.terrain_outlined,
+    's_raccordements': Icons.plumbing_outlined,
+    's_facade_ext': Icons.format_paint_outlined,
+    's_acces': Icons.directions_car_outlined,
+    's_urbanisme': Icons.location_city_outlined,
+    's_risques': Icons.warning_amber_outlined,
+    's_diagnostics': Icons.assignment_outlined,
     's8': Icons.receipt_long_outlined,
   };
+
+  // Template inline pour le champ conditionnel "stations" (non dans kDefaultQuestions)
+  static const _kTransportStationsQ = QuestionTemplate(
+    id: kQTransportStations,
+    section: 's1',
+    text: 'Noms des stations/arrêts les plus proches',
+    level: QuestionLevel.important,
+    type: QuestionType.text,
+    timing: QuestionTiming.avant,
+  );
 
   /// Groupe les questions par clé de section, en préservant l'ordre.
   Map<String, List<QuestionTemplate>> _groupBySection(
@@ -338,6 +437,18 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
     if (v is List<String>) return jsonEncode(v);
     if (v is String) return v;
     return null;
+  }
+
+  Widget _buildTransportStationsCard() {
+    final v = _answers[kQTransportType];
+    final hasSelection = v is List && v.isNotEmpty;
+    if (!hasSelection) return const SizedBox.shrink();
+    return QuestionCard(
+      key: const ValueKey(kQTransportStations),
+      question: _kTransportStationsQ,
+      value: _answers[kQTransportStations],
+      onChanged: (val) => _setAnswer(kQTransportStations, val),
+    );
   }
 
   // ── Construction du VisitAnswers ───────────────────────────────────────────
@@ -461,6 +572,70 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
       exteriorSpaces: _exteriorSpaces.isEmpty
           ? null
           : jsonEncode(_exteriorSpaces.map((e) => e.toJson()).toList()),
+      // ── v3 : Transport conditionnel ──
+      transportStations: strQ(kQTransportStations),
+      // ── v3 : Admin ──
+      taxeHabitation: strQ(kQTaxeHabitation),
+      coproprieteMaison: boolQ(kQCoproprietieMaison),
+      // ── v3 : Extérieur structure maison ──
+      facadeFissures: boolQ(kQFacadeFissures),
+      solAffaissement: boolQ(kQSolAffaissement),
+      mursDeformation: boolQ(kQMursDeformation),
+      humiditeExterieure: boolQ(kQHumiditeExterieure),
+      // ── v3 : Toiture ──
+      toitureTuiles: intQ(kQToitureTuiles),
+      goutieres: boolQ(kQGoutieres),
+      charpente: boolQ(kQCharpente),
+      isolationToiture: boolQ(kQIsolationToiture),
+      toitureRenovation: boolQ(kQToitureRenovation),
+      // ── v3 : Drainage ──
+      terrainPente: boolQ(kQTerrainPente),
+      eauStagnante: boolQ(kQEauStagnante),
+      drains: boolQ(kQDrains),
+      tracesInondation: boolQ(kQTracesInondation),
+      // ── v3 : Terrain ──
+      terrainVoisinsProximite: intQ(kQTerrainVoisinsProximite),
+      incidentsVoisins: boolQ(kQIncidentsVoisins),
+      arbresProches: boolQ(kQArbresProches),
+      orientationTerrain: strQ(kQOrientationTerrain),
+      nuisancesTerrain: intQ(kQNuisancesTerrain),
+      // ── v3 : Raccordements ──
+      raccordementEauElecGaz: boolQ(kQRaccordementEauElecGaz),
+      toutALegout: strQ(kQToutALegout),
+      fibreMaison: boolQ(kQFibreMaison),
+      branchementsEtat: intQ(kQBranchementsEtat),
+      // ── v3 : Façade ext ──
+      crepiEtat: intQ(kQCrepiEtat),
+      facadeHumidite: boolQ(kQFacadeHumidite),
+      ite: boolQ(kQIte),
+      // ── v3 : Accès ──
+      accesRoute: intQ(kQAccesRoute),
+      stationnementMaison: boolQ(kQStationnementMaison),
+      servitudes: boolQ(kQServitudes),
+      // ── v3 : Urbanisme ──
+      projetsConstruction: boolQ(kQProjetsConstruction),
+      plu: boolQ(kQPlu),
+      terrainsConstructibles: boolQ(kQTerrainsConstructibles),
+      // ── v3 : Risques ──
+      erpConsulte: boolQ(kQErpConsulte),
+      risqueInondation: boolQ(kQRisqueInondation),
+      risqueGlissement: boolQ(kQRisqueGlissement),
+      pollutionSols: boolQ(kQPollutionSols),
+      nuisancesEnvironnement: boolQ(kQNuisancesEnvironnement),
+      // ── v3 : Diagnostics ──
+      ravelementDate: strQ(kQRavelementDate),
+      travauxVotes: boolQ(kQTravauxVotes),
+      proceduresCopro: boolQ(kQProceduresCopro),
+      evacuationsCommunes: boolQ(kQEvacuationsCommunes),
+      fibreImmeuble: boolQ(kQFibreImmeuble),
+      dpeNiveau: strQ(kQDpeNiveau),
+      elecAge: boolQ(kQElecAge),
+      diagElec: strQ(kQDiagElec),
+      gazAge: boolQ(kQGazAge),
+      diagGaz: strQ(kQDiagGaz),
+      dateConstruction: strQ(kQDateConstruction),
+      diagAmiante: strQ(kQDiagAmiante),
+      diagPlomb: strQ(kQDiagPlomb),
     );
   }
 
@@ -596,13 +771,16 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
               total: entry.value.length,
             ),
             children: [
-              for (final q in entry.value)
+              for (final q in entry.value) ...[
                 QuestionCard(
                   key: ValueKey(q.id),
                   question: q,
                   value: _answers[q.id],
                   onChanged: (v) => _setAnswer(q.id, v),
                 ),
+                // Champ conditionnel : stations de transport si un mode TC sélectionné
+                if (q.id == kQTransportType) _buildTransportStationsCard(),
+              ],
               const SizedBox(height: DSpacing.sm),
             ],
           ),
@@ -646,26 +824,44 @@ class _VisitQuestionnaireScreenState extends State<VisitQuestionnaireScreen>
   // ── Onglet Après ──────────────────────────────────────────────────────────
 
   Widget _buildApresTab() {
+    final grouped = _groupBySection(_questionsApres);
     return ListView(
-      padding: const EdgeInsets.only(bottom: DSpacing.xxl),
+      padding: const EdgeInsets.only(top: DSpacing.xs, bottom: DSpacing.xxl),
       children: [
-        // Questions "après" (coup de cœur, point rédhibitoire)
-        if (_questionsApres.isNotEmpty) ...[
-          _SectionHeader(
-            section: 's8',
-            label: 'Bilan & impressions',
-            icon: Icons.rate_review_outlined,
-            answered: _answeredIn(_questionsApres),
-            total: _questionsApres.length,
-          ),
-          for (final q in _questionsApres)
-            QuestionCard(
-              key: ValueKey(q.id),
-              question: q,
-              value: _answers[q.id],
-              onChanged: (v) => _setAnswer(q.id, v),
+        // Questions "après" groupées par section
+        for (final entry in grouped.entries)
+          ExpansionTile(
+            key: ValueKey('apres_${entry.key}'),
+            initiallyExpanded: false,
+            leading: Icon(
+              _sectionIcons[entry.key] ?? Icons.help_outline,
+              size: 18,
+              color: DoutangTheme.primary,
             ),
-        ],
+            title: Text(
+              (_sectionLabels[entry.key] ?? entry.key).toUpperCase(),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: DoutangTheme.textSecondary,
+                letterSpacing: 0.8,
+              ),
+            ),
+            trailing: _AnsweredBadge(
+              answered: _answeredIn(entry.value),
+              total: entry.value.length,
+            ),
+            children: [
+              for (final q in entry.value)
+                QuestionCard(
+                  key: ValueKey(q.id),
+                  question: q,
+                  value: _answers[q.id],
+                  onChanged: (v) => _setAnswer(q.id, v),
+                ),
+              const SizedBox(height: DSpacing.sm),
+            ],
+          ),
 
         // Ressenti global
         const SizedBox(height: DSpacing.lg),
@@ -826,76 +1022,3 @@ class _AnsweredBadge extends StatelessWidget {
   }
 }
 
-// ── Widget interne : en-tête de section ────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  final String section;
-  final String label;
-  final IconData icon;
-  final int answered;
-  final int total;
-
-  const _SectionHeader({
-    required this.section,
-    required this.label,
-    required this.icon,
-    required this.answered,
-    required this.total,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final complete = answered == total;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        DSpacing.md,
-        DSpacing.md,
-        DSpacing.md,
-        DSpacing.xs,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 15, color: DoutangTheme.primary),
-          const SizedBox(width: DSpacing.sm),
-          Expanded(
-            child: Text(
-              label.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: DoutangTheme.textSecondary,
-                letterSpacing: 0.8,
-              ),
-            ),
-          ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: complete
-                  ? DoutangTheme.primarySurface
-                  : DoutangTheme.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: complete
-                    ? DoutangTheme.primary
-                    : DoutangTheme.border,
-              ),
-            ),
-            child: Text(
-              '$answered/$total',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: complete
-                    ? DoutangTheme.primary
-                    : DoutangTheme.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

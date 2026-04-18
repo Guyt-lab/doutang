@@ -231,6 +231,94 @@ class VisitAnswers {
   final int? outdoorSunExposure;
   final int? outdoorViewQuality;
 
+  // ── Champs v3 : Transports (conditionnel) ────────────────────────────────
+
+  final String? transportStations;
+
+  // ── Champs v3 : Administration complémentaires ───────────────────────────
+
+  final String? taxeHabitation;
+  final bool? coproprieteMaison;
+
+  // ── Champs v3 : Extérieur & Structure (maison) ───────────────────────────
+
+  final bool? facadeFissures;
+  final bool? solAffaissement;
+  final bool? mursDeformation;
+  final bool? humiditeExterieure;
+
+  // ── Champs v3 : Toiture (maison) ─────────────────────────────────────────
+
+  final int? toitureTuiles;
+  final bool? goutieres;
+  final bool? charpente;
+  final bool? isolationToiture;
+  final bool? toitureRenovation;
+
+  // ── Champs v3 : Drainage & Eau (maison) ──────────────────────────────────
+
+  final bool? terrainPente;
+  final bool? eauStagnante;
+  final bool? drains;
+  final bool? tracesInondation;
+
+  // ── Champs v3 : Terrain & Environnement (maison) ─────────────────────────
+
+  final int? terrainVoisinsProximite;
+  final bool? incidentsVoisins;
+  final bool? arbresProches;
+  final String? orientationTerrain;
+  final int? nuisancesTerrain;
+
+  // ── Champs v3 : Raccordements (maison) ───────────────────────────────────
+
+  final bool? raccordementEauElecGaz;
+  final String? toutALegout;
+  final bool? fibreMaison;
+  final int? branchementsEtat;
+
+  // ── Champs v3 : Façade & Isolation extérieure (maison) ───────────────────
+
+  final int? crepiEtat;
+  final bool? facadeHumidite;
+  final bool? ite;
+
+  // ── Champs v3 : Accès & Stationnement (maison) ───────────────────────────
+
+  final int? accesRoute;
+  final bool? stationnementMaison;
+  final bool? servitudes;
+
+  // ── Champs v3 : Urbanisme (maison, apres) ────────────────────────────────
+
+  final bool? projetsConstruction;
+  final bool? plu;
+  final bool? terrainsConstructibles;
+
+  // ── Champs v3 : Risques naturels (maison, apres) ─────────────────────────
+
+  final bool? erpConsulte;
+  final bool? risqueInondation;
+  final bool? risqueGlissement;
+  final bool? pollutionSols;
+  final bool? nuisancesEnvironnement;
+
+  // ── Champs v3 : Diagnostics techniques (achat+appartement, apres) ────────
+
+  final String? ravelementDate;
+  final bool? travauxVotes;
+  final bool? proceduresCopro;
+  final bool? evacuationsCommunes;
+  final bool? fibreImmeuble;
+  final String? dpeNiveau;
+  final bool? elecAge;
+  final String? diagElec;
+  final bool? gazAge;
+  final String? diagGaz;
+  final String? dateConstruction;
+  final String? diagAmiante;
+  final String? diagPlomb;
+
   VisitAnswers({
     // v1
     this.luminosite,
@@ -315,6 +403,59 @@ class VisitAnswers {
     this.outdoorNeighborExposure,
     this.outdoorSunExposure,
     this.outdoorViewQuality,
+    // v3
+    this.transportStations,
+    this.taxeHabitation,
+    this.coproprieteMaison,
+    this.facadeFissures,
+    this.solAffaissement,
+    this.mursDeformation,
+    this.humiditeExterieure,
+    this.toitureTuiles,
+    this.goutieres,
+    this.charpente,
+    this.isolationToiture,
+    this.toitureRenovation,
+    this.terrainPente,
+    this.eauStagnante,
+    this.drains,
+    this.tracesInondation,
+    this.terrainVoisinsProximite,
+    this.incidentsVoisins,
+    this.arbresProches,
+    this.orientationTerrain,
+    this.nuisancesTerrain,
+    this.raccordementEauElecGaz,
+    this.toutALegout,
+    this.fibreMaison,
+    this.branchementsEtat,
+    this.crepiEtat,
+    this.facadeHumidite,
+    this.ite,
+    this.accesRoute,
+    this.stationnementMaison,
+    this.servitudes,
+    this.projetsConstruction,
+    this.plu,
+    this.terrainsConstructibles,
+    this.erpConsulte,
+    this.risqueInondation,
+    this.risqueGlissement,
+    this.pollutionSols,
+    this.nuisancesEnvironnement,
+    this.ravelementDate,
+    this.travauxVotes,
+    this.proceduresCopro,
+    this.evacuationsCommunes,
+    this.fibreImmeuble,
+    this.dpeNiveau,
+    this.elecAge,
+    this.diagElec,
+    this.gazAge,
+    this.diagGaz,
+    this.dateConstruction,
+    this.diagAmiante,
+    this.diagPlomb,
   });
 
   /// Champs notés 1-5 utilisés pour le calcul du score v1 (rétrocompat).
@@ -413,6 +554,59 @@ class VisitAnswers {
         'outdoor_neighbor_exposure': outdoorNeighborExposure,
         'outdoor_sun_exposure': outdoorSunExposure,
         'outdoor_view_quality': outdoorViewQuality,
+        // v3
+        'transport_stations': transportStations,
+        'taxe_habitation': taxeHabitation,
+        'copropriete_maison': coproprieteMaison,
+        'facade_fissures': facadeFissures,
+        'sol_affaissement': solAffaissement,
+        'murs_deformation': mursDeformation,
+        'humidite_exterieure': humiditeExterieure,
+        'toiture_tuiles': toitureTuiles,
+        'goutieres': goutieres,
+        'charpente': charpente,
+        'isolation_toiture': isolationToiture,
+        'toiture_renovation': toitureRenovation,
+        'terrain_pente': terrainPente,
+        'eau_stagnante': eauStagnante,
+        'drains': drains,
+        'traces_inondation': tracesInondation,
+        'terrain_voisins_proximite': terrainVoisinsProximite,
+        'incidents_voisins': incidentsVoisins,
+        'arbres_proches': arbresProches,
+        'orientation_terrain': orientationTerrain,
+        'nuisances_terrain': nuisancesTerrain,
+        'raccordement_eau_elec_gaz': raccordementEauElecGaz,
+        'tout_a_legout': toutALegout,
+        'fibre_maison': fibreMaison,
+        'branchements_etat': branchementsEtat,
+        'crepi_etat': crepiEtat,
+        'facade_humidite': facadeHumidite,
+        'ite': ite,
+        'acces_route': accesRoute,
+        'stationnement_maison': stationnementMaison,
+        'servitudes': servitudes,
+        'projets_construction': projetsConstruction,
+        'plu': plu,
+        'terrains_constructibles': terrainsConstructibles,
+        'erp_consulte': erpConsulte,
+        'risque_inondation': risqueInondation,
+        'risque_glissement': risqueGlissement,
+        'pollution_sols': pollutionSols,
+        'nuisances_environnement': nuisancesEnvironnement,
+        'ravalement_date': ravelementDate,
+        'travaux_votes': travauxVotes,
+        'procedures_copro': proceduresCopro,
+        'evacuations_communes': evacuationsCommunes,
+        'fibre_immeuble': fibreImmeuble,
+        'dpe_niveau': dpeNiveau,
+        'elec_age': elecAge,
+        'diag_elec': diagElec,
+        'gaz_age': gazAge,
+        'diag_gaz': diagGaz,
+        'date_construction': dateConstruction,
+        'diag_amiante': diagAmiante,
+        'diag_plomb': diagPlomb,
       };
 
   factory VisitAnswers.fromJson(Map<String, dynamic> json) => VisitAnswers(
@@ -506,5 +700,58 @@ class VisitAnswers {
         outdoorNeighborExposure: (json['outdoor_neighbor_exposure'] as num?)?.toInt(),
         outdoorSunExposure: (json['outdoor_sun_exposure'] as num?)?.toInt(),
         outdoorViewQuality: (json['outdoor_view_quality'] as num?)?.toInt(),
+        // v3
+        transportStations: json['transport_stations'] as String?,
+        taxeHabitation: json['taxe_habitation'] as String?,
+        coproprieteMaison: json['copropriete_maison'] as bool?,
+        facadeFissures: json['facade_fissures'] as bool?,
+        solAffaissement: json['sol_affaissement'] as bool?,
+        mursDeformation: json['murs_deformation'] as bool?,
+        humiditeExterieure: json['humidite_exterieure'] as bool?,
+        toitureTuiles: (json['toiture_tuiles'] as num?)?.toInt(),
+        goutieres: json['goutieres'] as bool?,
+        charpente: json['charpente'] as bool?,
+        isolationToiture: json['isolation_toiture'] as bool?,
+        toitureRenovation: json['toiture_renovation'] as bool?,
+        terrainPente: json['terrain_pente'] as bool?,
+        eauStagnante: json['eau_stagnante'] as bool?,
+        drains: json['drains'] as bool?,
+        tracesInondation: json['traces_inondation'] as bool?,
+        terrainVoisinsProximite: (json['terrain_voisins_proximite'] as num?)?.toInt(),
+        incidentsVoisins: json['incidents_voisins'] as bool?,
+        arbresProches: json['arbres_proches'] as bool?,
+        orientationTerrain: json['orientation_terrain'] as String?,
+        nuisancesTerrain: (json['nuisances_terrain'] as num?)?.toInt(),
+        raccordementEauElecGaz: json['raccordement_eau_elec_gaz'] as bool?,
+        toutALegout: json['tout_a_legout'] as String?,
+        fibreMaison: json['fibre_maison'] as bool?,
+        branchementsEtat: (json['branchements_etat'] as num?)?.toInt(),
+        crepiEtat: (json['crepi_etat'] as num?)?.toInt(),
+        facadeHumidite: json['facade_humidite'] as bool?,
+        ite: json['ite'] as bool?,
+        accesRoute: (json['acces_route'] as num?)?.toInt(),
+        stationnementMaison: json['stationnement_maison'] as bool?,
+        servitudes: json['servitudes'] as bool?,
+        projetsConstruction: json['projets_construction'] as bool?,
+        plu: json['plu'] as bool?,
+        terrainsConstructibles: json['terrains_constructibles'] as bool?,
+        erpConsulte: json['erp_consulte'] as bool?,
+        risqueInondation: json['risque_inondation'] as bool?,
+        risqueGlissement: json['risque_glissement'] as bool?,
+        pollutionSols: json['pollution_sols'] as bool?,
+        nuisancesEnvironnement: json['nuisances_environnement'] as bool?,
+        ravelementDate: json['ravalement_date'] as String?,
+        travauxVotes: json['travaux_votes'] as bool?,
+        proceduresCopro: json['procedures_copro'] as bool?,
+        evacuationsCommunes: json['evacuations_communes'] as bool?,
+        fibreImmeuble: json['fibre_immeuble'] as bool?,
+        dpeNiveau: json['dpe_niveau'] as String?,
+        elecAge: json['elec_age'] as bool?,
+        diagElec: json['diag_elec'] as String?,
+        gazAge: json['gaz_age'] as bool?,
+        diagGaz: json['diag_gaz'] as String?,
+        dateConstruction: json['date_construction'] as String?,
+        diagAmiante: json['diag_amiante'] as String?,
+        diagPlomb: json['diag_plomb'] as String?,
       );
 }

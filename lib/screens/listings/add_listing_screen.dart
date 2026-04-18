@@ -88,19 +88,17 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
         // Pre-fill facts from existing listing
         final facts = arg.facts;
-        if (facts != null) {
-          if (facts.dpe != null) _dpeController.text = facts.dpe!;
-          if (facts.floor != null) _floorController.text = facts.floor!.toString();
-          if (facts.charges != null) {
-            _chargesController.text = facts.charges!.toInt().toString();
-          }
-          _isFurnished = facts.isFurnished;
-          _hasBalcony = facts.hasBalcony;
-          _hasTerrace = facts.hasTerrace;
-          _hasGarden = facts.hasGarden;
-          _hasParking = facts.hasParking;
-          _hasCellar = facts.hasCellar;
+        if (facts.dpe != null) _dpeController.text = facts.dpe!;
+        if (facts.floor != null) _floorController.text = facts.floor!.toString();
+        if (facts.charges != null) {
+          _chargesController.text = facts.charges!.toInt().toString();
         }
+        _isFurnished = facts.isFurnished;
+        _hasBalcony = facts.hasBalcony;
+        _hasTerrace = facts.hasTerrace;
+        _hasGarden = facts.hasGarden;
+        _hasParking = facts.hasParking;
+        _hasCellar = facts.hasCellar;
       });
     }
   }
