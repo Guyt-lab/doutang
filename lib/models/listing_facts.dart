@@ -123,6 +123,50 @@ class ListingFacts {
     this.charges,
   });
 
+  /// Vrai si aucun champ n'est renseigné.
+  bool get isEmpty =>
+      surfaceTotal == null &&
+      surfaceSejour == null &&
+      rooms == null &&
+      bedrooms == null &&
+      floor == null &&
+      floorsTotal == null &&
+      isFurnished == null &&
+      buildingYear == null &&
+      style == null &&
+      dpe == null &&
+      heatingType == null &&
+      heatingControl == null &&
+      doubleGlazing == null &&
+      windowsCount == null &&
+      secureDoor == null &&
+      fiber == null &&
+      waterQuality == null &&
+      floorTypeLiving == null &&
+      floorTypeBedroom == null &&
+      kitchenType == null &&
+      kitchenEnergy == null &&
+      kitchenEquipped == null &&
+      lightingLiving == null &&
+      lightingBedroom == null &&
+      hasBalcony == null &&
+      hasTerrace == null &&
+      hasGarden == null &&
+      hasCourtyard == null &&
+      hasParking == null &&
+      hasCellar == null &&
+      hasBeams == null &&
+      hasFireplace == null &&
+      fireplaceFunctional == null &&
+      hasMouldings == null &&
+      hasHallway == null &&
+      separateToilet == null &&
+      bathroomSize == null &&
+      hasDressing == null &&
+      bedroomBathroomProximity == null &&
+      kitchenLivingProximity == null &&
+      charges == null;
+
   /// Retourne un [ListingFacts] avec les champs non-null de [other]
   /// pour tous les champs qui sont null dans this.
   ListingFacts complement(ListingFacts? other) {

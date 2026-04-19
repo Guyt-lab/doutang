@@ -8,6 +8,7 @@ import '../screens/compare/compare_screen.dart';
 import '../screens/listings/add_listing_screen.dart';
 import '../screens/listings/listing_contact_screen.dart';
 import '../screens/listings/listing_detail_screen.dart';
+import '../screens/listings/listing_facts_screen.dart';
 import '../screens/listings/listings_screen.dart';
 import '../screens/profile/desiderata_screen.dart';
 import '../screens/profile/profile_screen.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String visitSummary = '/visits/summary';
 
   static const String listingContact = '/listing/contact';
+  static const String listingFacts = '/listing/facts';
 
   static const String compare = '/compare';
 
@@ -120,6 +122,16 @@ class AppRoutes {
           final listing =
               ModalRoute.of(context)?.settings.arguments as Listing?;
           return ListingContactScreen(
+            listing: listing ??
+                Listing(title: 'Annonce sans titre', addedBy: 'demo'),
+          );
+        },
+
+        // Fiche technique : attend un Listing.
+        listingFacts: (context) {
+          final listing =
+              ModalRoute.of(context)?.settings.arguments as Listing?;
+          return ListingFactsScreen(
             listing: listing ??
                 Listing(title: 'Annonce sans titre', addedBy: 'demo'),
           );

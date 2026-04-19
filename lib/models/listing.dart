@@ -32,6 +32,9 @@ class Listing {
   /// Type de transaction : achat ou location.
   final ListingTransactionKind? transactionKind;
 
+  /// Noms des champs remplis automatiquement par le parser (clés JSON).
+  final Set<String> autoFilledFields;
+
   Listing({
     String? id,
     this.url,
@@ -49,12 +52,14 @@ class Listing {
     this.contact,
     this.propertyKind,
     this.transactionKind,
+    Set<String>? autoFilledFields,
   })  : id = id ?? _uuid.v4(),
         status = status ?? ListingStatus.aContacter,
         notes = notes ?? '',
         addedAt = addedAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now(),
-        facts = facts ?? const ListingFacts();
+        facts = facts ?? const ListingFacts(),
+        autoFilledFields = autoFilledFields ?? const {};
 
   Listing copyWith({
     String? url,
@@ -72,6 +77,7 @@ class Listing {
     bool clearPropertyKind = false,
     ListingTransactionKind? transactionKind,
     bool clearTransactionKind = false,
+    Set<String>? autoFilledFields,
   }) {
     return Listing(
       id: id,
@@ -93,6 +99,7 @@ class Listing {
       transactionKind: clearTransactionKind
           ? null
           : (transactionKind ?? this.transactionKind),
+      autoFilledFields: autoFilledFields ?? this.autoFilledFields,
     );
   }
 
@@ -113,6 +120,7 @@ class Listing {
         'contact': contact?.toJson(),
         'property_kind': propertyKind?.name,
         'transaction_kind': transactionKind?.name,
+        'auto_filled_fields': autoFilledFields.toList(),
       };
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
@@ -141,6 +149,8 @@ class Listing {
             ListingPropertyKind.values, json['property_kind'] as String?),
         transactionKind: enumFromJson(
             ListingTransactionKind.values, json['transaction_kind'] as String?),
+        autoFilledFields:
+            Set<String>.from(json['auto_filled_fields'] as List? ?? []),
       );
 }
 

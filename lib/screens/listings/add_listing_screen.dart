@@ -46,6 +46,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   String? _coherenceWarning;
   UserProfile? _profile;
+  Set<String> _autoFilledFields = {};
 
   /// Non-null en mode édition.
   Listing? _editingListing;
@@ -100,6 +101,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
         _hasGarden = facts.hasGarden;
         _hasParking = facts.hasParking;
         _hasCellar = facts.hasCellar;
+        _autoFilledFields = Set.of(arg.autoFilledFields);
       });
     }
   }
@@ -151,42 +153,80 @@ class _AddListingScreenState extends State<AddListingScreen> {
     setState(() {
       _isParsing = false;
       _showManual = true;
+      final filled = <String>{};
 
-      if (parsed.title != null) _titleController.text = parsed.title!;
+      if (parsed.title != null) {
+        _titleController.text = parsed.title!;
+        filled.add('title');
+      }
       if (parsed.price != null) {
         _priceController.text = parsed.price!.toInt().toString();
+        filled.add('price');
       }
       if (parsed.surface != null) {
         _surfaceController.text = parsed.surface!.toInt().toString();
+        filled.add('surface');
       }
-      if (parsed.address != null) _addressController.text = parsed.address!;
+      if (parsed.address != null) {
+        _addressController.text = parsed.address!;
+        filled.add('address');
+      }
 
       // Kind selectors
       if (parsed.propertyType == 'appartement') {
         _propertyKind = ListingPropertyKind.appartement;
+        filled.add('property_kind');
       } else if (parsed.propertyType == 'maison') {
         _propertyKind = ListingPropertyKind.maison;
+        filled.add('property_kind');
       }
       if (parsed.transactionType == 'location') {
         _transactionKind = ListingTransactionKind.location;
+        filled.add('transaction_kind');
       } else if (parsed.transactionType == 'achat') {
         _transactionKind = ListingTransactionKind.achat;
+        filled.add('transaction_kind');
       }
 
       // Facts
-      if (parsed.dpe != null) _dpeController.text = parsed.dpe!;
-      if (parsed.floor != null)
+      if (parsed.dpe != null) {
+        _dpeController.text = parsed.dpe!;
+        filled.add('dpe');
+      }
+      if (parsed.floor != null) {
         _floorController.text = parsed.floor!.toString();
+        filled.add('floor');
+      }
       if (parsed.charges != null) {
         _chargesController.text = parsed.charges!.toInt().toString();
+        filled.add('charges');
       }
-      _isFurnished ??= parsed.isFurnished;
-      _hasBalcony ??= parsed.hasBalcony;
-      _hasTerrace ??= parsed.hasTerrace;
-      _hasGarden ??= parsed.hasGarden;
-      _hasParking ??= parsed.hasParking;
-      _hasCellar ??= parsed.hasCellar;
+      if (parsed.isFurnished != null) {
+        _isFurnished ??= parsed.isFurnished;
+        filled.add('is_furnished');
+      }
+      if (parsed.hasBalcony != null) {
+        _hasBalcony ??= parsed.hasBalcony;
+        filled.add('has_balcony');
+      }
+      if (parsed.hasTerrace != null) {
+        _hasTerrace ??= parsed.hasTerrace;
+        filled.add('has_terrace');
+      }
+      if (parsed.hasGarden != null) {
+        _hasGarden ??= parsed.hasGarden;
+        filled.add('has_garden');
+      }
+      if (parsed.hasParking != null) {
+        _hasParking ??= parsed.hasParking;
+        filled.add('has_parking');
+      }
+      if (parsed.hasCellar != null) {
+        _hasCellar ??= parsed.hasCellar;
+        filled.add('has_cellar');
+      }
 
+      _autoFilledFields = {..._autoFilledFields, ...filled};
       _checkCoherence(parsed);
     });
   }
@@ -287,6 +327,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       contact: _editingListing?.contact,
       propertyKind: _propertyKind,
       transactionKind: _transactionKind,
+      autoFilledFields: _autoFilledFields,
     );
 
     if (_isEditMode) {
