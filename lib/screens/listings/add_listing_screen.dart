@@ -5,10 +5,12 @@ import '../../models/enums.dart';
 import '../../models/listing.dart';
 import '../../models/listing_facts.dart';
 import '../../models/profile.dart';
+import '../../models/visit.dart';
 import '../../services/listing_parser_service.dart';
 import '../../services/listing_storage_service.dart';
 import '../../services/profile_storage_service.dart';
 import '../../services/project_service.dart';
+import '../../services/visit_storage_service.dart';
 import '../../theme/doutang_theme.dart';
 
 class AddListingScreen extends StatefulWidget {
@@ -47,6 +49,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
   String? _coherenceWarning;
   UserProfile? _profile;
   Set<String> _autoFilledFields = {};
+  ListingFacts? _parsedFacts;
+  VisitAnswers? _parsedAnswers;
 
   /// Non-null en mode édition.
   Listing? _editingListing;
@@ -227,8 +231,20 @@ class _AddListingScreenState extends State<AddListingScreen> {
       }
 
       _autoFilledFields = {..._autoFilledFields, ...filled};
+      _parsedFacts = ListingFacts.fromParsed(parsed);
+      _parsedAnswers = VisitAnswers.fromParsed(parsed);
       _checkCoherence(parsed);
     });
+
+    final count = parsed.extractedCount;
+    if (count > 1 && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$count informations extraites depuis l\'annonce'),
+          backgroundColor: DoutangTheme.primary,
+        ),
+      );
+    }
   }
 
   void _checkCoherence(ParsedListing parsed) {
@@ -334,6 +350,17 @@ class _AddListingScreenState extends State<AddListingScreen> {
       await ListingStorageService.update(listing, projectId: projectId);
     } else {
       await ListingStorageService.add(listing, projectId: projectId);
+      // Pré-remplir une visite si le parser a extrait des réponses utiles
+      if (_parsedAnswers != null) {
+        final existingVisits =
+            await VisitStorageService.load(projectId: projectId);
+        existingVisits.add(Visit(
+          listingId: listing.id,
+          owner: owner,
+          answers: _parsedAnswers!,
+        ));
+        await VisitStorageService.save(existingVisits, projectId: projectId);
+      }
     }
 
     if (mounted) {
@@ -360,7 +387,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
         _hasParking != null ||
         _hasCellar != null;
 
-    if (!hasAny && existing == null) return null;
+    if (!hasAny && existing == null && _parsedFacts == null) return null;
 
     final fromForm = ListingFacts(
       dpe: dpe,
@@ -374,7 +401,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
       hasCellar: _hasCellar,
     );
 
-    return existing != null ? fromForm.complement(existing) : fromForm;
+    // Form overrides parsed, parsed overrides existing
+    return fromForm.complement(_parsedFacts).complement(existing);
   }
 
   Widget _buildSegmentRow({

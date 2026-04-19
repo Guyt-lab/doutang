@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:doutang/models/listing_facts.dart';
+import 'package:doutang/models/enums.dart';
+import 'package:doutang/models/visit.dart';
 import 'package:doutang/services/listing_parser_service.dart';
 
 // ── HTML mock complet (style Jinka avec og: tags) ─────────────────────────────
@@ -394,6 +397,383 @@ void main() {
       });
     });
   });
+
+    // ── Nouvelles détections sémantiques ────────────────────────────────────
+
+    group('passe sémantique — chambres', () {
+      test('extrait "2 chambres"', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement avec 2 chambres et salon.</body></html>',
+        );
+        expect(r.bedrooms, equals(2));
+      });
+
+      test('extrait "1 chambre"', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Studio avec 1 chambre séparée.</body></html>',
+        );
+        expect(r.bedrooms, equals(1));
+      });
+    });
+
+    group('passe sémantique — ascenseur & digicode', () {
+      test('détecte ascenseur', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Immeuble avec ascenseur, 4ème étage.</body></html>',
+        );
+        expect(r.hasElevator, isTrue);
+      });
+
+      test('détecte digicode', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Accès sécurisé avec digicode et interphone.</body></html>',
+        );
+        expect(r.hasIntercom, isTrue);
+      });
+
+      test('détecte interphone', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Immeuble avec interphone vidéo.</body></html>',
+        );
+        expect(r.hasIntercom, isTrue);
+      });
+
+      test('retourne null si absent', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Petit immeuble sans gardien.</body></html>',
+        );
+        expect(r.hasElevator, isNull);
+        expect(r.hasIntercom, isNull);
+      });
+    });
+
+    group('passe sémantique — local vélos', () {
+      test('détecte local vélos', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Local vélos et cave en sous-sol.</body></html>',
+        );
+        expect(r.hasBikeStorage, isTrue);
+      });
+    });
+
+    group('passe sémantique — chauffage collectif', () {
+      test('détecte chauffage collectif', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Chauffage collectif au gaz, eau chaude collective incluse.</body></html>',
+        );
+        expect(r.heatingCollective, isTrue);
+        expect(r.hotWaterCollective, isTrue);
+      });
+
+      test('détecte chauffage individuel', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Chauffage individuel électrique.</body></html>',
+        );
+        expect(r.heatingCollective, isFalse);
+      });
+    });
+
+    group('passe sémantique — cheminée, poutres, moulures', () {
+      test('détecte cheminée', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Beau séjour avec cheminée en marbre.</body></html>',
+        );
+        expect(r.hasFireplace, isTrue);
+      });
+
+      test('détecte poutres apparentes', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement avec poutres apparentes au plafond.</body></html>',
+        );
+        expect(r.hasBeams, isTrue);
+      });
+
+      test('détecte moulures', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Bel haussmannien avec moulures et parquet.</body></html>',
+        );
+        expect(r.hasMouldings, isTrue);
+      });
+    });
+
+    group('passe sémantique — type de cuisine', () {
+      test('détecte cuisine américaine', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Séjour avec cuisine américaine équipée.</body></html>',
+        );
+        expect(r.kitchenType, equals('americaine'));
+      });
+
+      test('détecte cuisine ouverte', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Grand séjour avec cuisine ouverte.</body></html>',
+        );
+        expect(r.kitchenType, equals('ouverte'));
+      });
+
+      test('détecte cuisine fermée', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Appartement avec cuisine fermée indépendante.</body></html>',
+        );
+        expect(r.kitchenType, equals('fermee'));
+      });
+    });
+
+    group('passe sémantique — surfaces extérieures', () {
+      test('extrait surface balcon', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Bel appartement avec balcon de 8 m².</body></html>',
+        );
+        expect(r.balconySurface, equals(8.0));
+      });
+
+      test('extrait surface terrasse', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Grande terrasse de 20 m² plein sud.</body></html>',
+        );
+        expect(r.terraceSurface, equals(20.0));
+      });
+
+      test('extrait surface jardin', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Maison avec jardin de 150 m².</body></html>',
+        );
+        expect(r.gardenSurface, equals(150.0));
+      });
+    });
+
+    group('passe sémantique — GES', () {
+      test('extrait la classe GES', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>DPE : C. GES : B. Logement économe.</body></html>',
+        );
+        expect(r.gesClass, equals('B'));
+      });
+    });
+
+    group('passe sémantique — année de construction', () {
+      test('extrait "construit en 1975"', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Immeuble construit en 1975, bien entretenu.</body></html>',
+        );
+        expect(r.constructionYear, equals(1975));
+      });
+    });
+
+    group('passe sémantique — agence / particulier', () {
+      test('détecte annonce via agence', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Offre proposée par une agence immobilière.</body></html>',
+        );
+        expect(r.isAgency, isTrue);
+      });
+
+      test('détecte annonce de particulier', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Vente entre particuliers, pas de frais d\'agence.</body></html>',
+        );
+        expect(r.isAgency, isFalse);
+      });
+    });
+
+    group('passe sémantique — chauffage bois', () {
+      test('détecte poêle à bois', () {
+        final r = ListingParserService.parseHtml(
+          '<html><body>Maison avec poêle à bois dans le séjour.</body></html>',
+        );
+        expect(r.heatingType, equals('bois'));
+      });
+    });
+
+    // ── JSON-LD ──────────────────────────────────────────────────────────────
+
+    group('JSON-LD schema.org', () {
+      test('extrait le prix depuis offers.price', () {
+        const html = '''
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Apartment","name":"Bel appartement","offers":{"@type":"Offer","price":1250,"priceCurrency":"EUR"}}
+</script>
+</head><body></body></html>''';
+        final r = ListingParserService.parseHtml(html);
+        expect(r.price, equals(1250.0));
+      });
+
+      test('extrait la surface depuis floorSize.value', () {
+        const html = '''
+<html><head>
+<script type="application/ld+json">
+{"@type":"Apartment","name":"T3 Lyon","floorSize":{"@type":"QuantitativeValue","value":68,"unitCode":"MTK"}}
+</script>
+</head><body></body></html>''';
+        final r = ListingParserService.parseHtml(html);
+        expect(r.surface, equals(68.0));
+      });
+
+      test('extrait numberOfRooms et numberOfBedrooms', () {
+        const html = '''
+<html><head>
+<script type="application/ld+json">
+{"@type":"Apartment","numberOfRooms":3,"numberOfBedrooms":2}
+</script>
+</head><body></body></html>''';
+        final r = ListingParserService.parseHtml(html);
+        expect(r.rooms, equals(3));
+        expect(r.bedrooms, equals(2));
+      });
+
+      test('extrait l\'adresse depuis address.addressLocality', () {
+        const html = '''
+<html><head>
+<script type="application/ld+json">
+{"@type":"Apartment","address":{"@type":"PostalAddress","addressLocality":"Lyon"}}
+</script>
+</head><body></body></html>''';
+        final r = ListingParserService.parseHtml(html);
+        expect(r.address, equals('Lyon'));
+      });
+
+      test('og: prime sur JSON-LD pour le prix', () {
+        const html = '''
+<html><head>
+<meta property="og:description" content="Loyer : 900 €/mois." />
+<script type="application/ld+json">
+{"@type":"Apartment","offers":{"price":1500}}
+</script>
+</head><body></body></html>''';
+        final r = ListingParserService.parseHtml(html);
+        // og: est prioritaire : le prix doit être 900, pas 1500
+        expect(r.price, equals(900.0));
+      });
+    });
+
+    // ── ListingFacts.fromParsed ───────────────────────────────────────────────
+
+    group('ListingFacts.fromParsed', () {
+      test('mappe surface, rooms, bedrooms, floor', () {
+        const p = ParsedListing(
+          surface: 65.0,
+          rooms: 3,
+          bedrooms: 2,
+          floor: 4,
+        );
+        final f = ListingFacts.fromParsed(p);
+        expect(f.surfaceTotal, equals(65.0));
+        expect(f.rooms, equals(3));
+        expect(f.bedrooms, equals(2));
+        expect(f.floor, equals(4));
+      });
+
+      test('convertit heatingType string → enum', () {
+        const p = ParsedListing(heatingType: 'gaz');
+        final f = ListingFacts.fromParsed(p);
+        expect(f.heatingType, equals(HeatingType.gaz));
+      });
+
+      test('heatingCollective=true → HeatingControl.collectif', () {
+        const p = ParsedListing(heatingCollective: true);
+        final f = ListingFacts.fromParsed(p);
+        expect(f.heatingControl, equals(HeatingControl.collectif));
+      });
+
+      test('heatingCollective=false → HeatingControl.individuel', () {
+        const p = ParsedListing(heatingCollective: false);
+        final f = ListingFacts.fromParsed(p);
+        expect(f.heatingControl, equals(HeatingControl.individuel));
+      });
+
+      test('convertit kitchenType string → enum', () {
+        const p = ParsedListing(kitchenType: 'ouverte');
+        final f = ListingFacts.fromParsed(p);
+        expect(f.kitchenType, equals(KitchenType.ouverte));
+      });
+
+      test('mappe extérieurs avec surfaces', () {
+        const p = ParsedListing(
+          hasBalcony: true,
+          balconySurface: 8.0,
+          hasTerrace: true,
+          terraceSurface: 15.0,
+        );
+        final f = ListingFacts.fromParsed(p);
+        expect(f.hasBalcony, isTrue);
+        expect(f.balconySurface, equals(8.0));
+        expect(f.hasTerrace, isTrue);
+        expect(f.terraceSurface, equals(15.0));
+      });
+
+      test('mappe hasFireplace, hasBeams, hasMouldings', () {
+        const p = ParsedListing(
+          hasFireplace: true,
+          hasBeams: true,
+          hasMouldings: true,
+        );
+        final f = ListingFacts.fromParsed(p);
+        expect(f.hasFireplace, isTrue);
+        expect(f.hasBeams, isTrue);
+        expect(f.hasMouldings, isTrue);
+      });
+
+      test('heatingType inconnu → HeatingType.autre', () {
+        const p = ParsedListing(heatingType: 'plancherChauffant');
+        final f = ListingFacts.fromParsed(p);
+        expect(f.heatingType, equals(HeatingType.autre));
+      });
+    });
+
+    // ── VisitAnswers.fromParsed ───────────────────────────────────────────────
+
+    group('VisitAnswers.fromParsed', () {
+      test('cave, ascenseur, digicode mappés', () {
+        const p = ParsedListing(
+          hasCellar: true,
+          hasElevator: true,
+          hasIntercom: true,
+        );
+        final a = VisitAnswers.fromParsed(p);
+        expect(a.cave, isTrue);
+        expect(a.ascenseur, isTrue);
+        expect(a.digicode, isTrue);
+      });
+
+      test('balconOuTerrasse = true si balcon ou terrasse présent', () {
+        const p = ParsedListing(hasBalcony: true);
+        final a = VisitAnswers.fromParsed(p);
+        expect(a.balconOuTerrasse, isTrue);
+      });
+
+      test('chargesAmount converti en chaîne', () {
+        const p = ParsedListing(charges: 120.0);
+        final a = VisitAnswers.fromParsed(p);
+        expect(a.chargesAmount, equals('120'));
+      });
+
+      test('dpeNiveau et dateConstruction mappés', () {
+        const p = ParsedListing(dpe: 'C', constructionYear: 1990);
+        final a = VisitAnswers.fromParsed(p);
+        expect(a.dpeNiveau, equals('C'));
+        expect(a.dateConstruction, equals('1990'));
+      });
+    });
+
+    // ── extractedCount ────────────────────────────────────────────────────────
+
+    group('extractedCount', () {
+      test('0 pour un ParsedListing vide', () {
+        expect(const ParsedListing().extractedCount, equals(0));
+      });
+
+      test('compte correctement les champs non-null', () {
+        const p = ParsedListing(
+          title: 'Appart',
+          price: 900.0,
+          surface: 48.0,
+          dpe: 'C',
+          hasBalcony: true,
+        );
+        expect(p.extractedCount, equals(5));
+      });
+    });
 
   // ── ListingStorageService (via import séparé dans un autre fichier) ────────
   // Les tests de stockage sont dans test/services/listing_storage_test.dart

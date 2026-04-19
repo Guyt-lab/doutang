@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 
 import 'renovation_answers.dart';
+import '../services/listing_parser_service.dart';
 
 const _uuid = Uuid();
 
@@ -754,5 +755,21 @@ class VisitAnswers {
         dateConstruction: json['date_construction'] as String?,
         diagAmiante: json['diag_amiante'] as String?,
         diagPlomb: json['diag_plomb'] as String?,
+      );
+
+  /// Crée un [VisitAnswers] pré-rempli depuis les données extraites par le parser.
+  static VisitAnswers fromParsed(ParsedListing p) => VisitAnswers(
+        cave: p.hasCellar,
+        balconOuTerrasse:
+            (p.hasBalcony == true || p.hasTerrace == true) ? true : null,
+        ascenseur: p.hasElevator,
+        digicode: p.hasIntercom,
+        bikeStorage: p.hasBikeStorage,
+        parking: p.hasParking,
+        agencyFees: p.agencyFees,
+        chargesAmount: p.charges?.toInt().toString(),
+        dpeNiveau: p.dpe,
+        heatingSystem: p.heatingType,
+        dateConstruction: p.constructionYear?.toString(),
       );
 }

@@ -1,4 +1,5 @@
 import 'enums.dart';
+import '../services/listing_parser_service.dart';
 
 /// Caractéristiques factuelles et objectives d'un bien immobilier.
 ///
@@ -327,4 +328,53 @@ class ListingFacts {
             Proximity.values, json['kitchen_living_proximity'] as String?),
         charges: (json['charges'] as num?)?.toDouble(),
       );
+
+  /// Crée un [ListingFacts] pré-rempli depuis les données extraites par le parser.
+  static ListingFacts fromParsed(ParsedListing p) => ListingFacts(
+        surfaceTotal: p.surface,
+        rooms: p.rooms,
+        bedrooms: p.bedrooms,
+        floor: p.floor,
+        floorsTotal: p.floorsTotal,
+        isFurnished: p.isFurnished,
+        buildingYear: p.constructionYear,
+        dpe: p.dpe,
+        heatingType: _heatingTypeFromString(p.heatingType),
+        heatingControl: p.heatingCollective == true
+            ? HeatingControl.collectif
+            : p.heatingCollective == false
+                ? HeatingControl.individuel
+                : null,
+        hasBalcony: p.hasBalcony,
+        balconySurface: p.balconySurface,
+        hasTerrace: p.hasTerrace,
+        terraceSurface: p.terraceSurface,
+        hasGarden: p.hasGarden,
+        gardenSurface: p.gardenSurface,
+        hasParking: p.hasParking,
+        hasCellar: p.hasCellar,
+        hasFireplace: p.hasFireplace,
+        hasBeams: p.hasBeams,
+        hasMouldings: p.hasMouldings,
+        kitchenType: _kitchenTypeFromString(p.kitchenType),
+        charges: p.charges,
+      );
+
+  static HeatingType? _heatingTypeFromString(String? s) => switch (s) {
+        'gaz' => HeatingType.gaz,
+        'electrique' => HeatingType.electrique,
+        'fioul' => HeatingType.fioul,
+        'pompeAChaleur' => HeatingType.pompeAChaleur,
+        'bois' => HeatingType.bois,
+        'climReversible' => HeatingType.climReversible,
+        _ => s != null ? HeatingType.autre : null,
+      };
+
+  static KitchenType? _kitchenTypeFromString(String? s) => switch (s) {
+        'ouverte' => KitchenType.ouverte,
+        'fermee' => KitchenType.fermee,
+        'semiOuverte' => KitchenType.semiOuverte,
+        'americaine' => KitchenType.americaine,
+        _ => null,
+      };
 }
