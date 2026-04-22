@@ -64,6 +64,9 @@ class ParsedListing {
   /// true = via agence, false = particulier
   final bool? isAgency;
 
+  /// true = réseau fibre disponible dans l'immeuble
+  final bool? fiber;
+
   final String? description;
 
   const ParsedListing({
@@ -103,6 +106,7 @@ class ParsedListing {
     this.energyConsumption,
     this.agencyFees,
     this.isAgency,
+    this.fiber,
     this.description,
   });
 
@@ -149,6 +153,7 @@ class ParsedListing {
     if (energyConsumption != null) n++;
     if (agencyFees != null) n++;
     if (isAgency != null) n++;
+    if (fiber != null) n++;
     if (description != null) n++;
     return n;
   }
@@ -347,21 +352,26 @@ class ListingParserService {
         .toLowerCase();
 
     // Transaction
-    String? transactionType;
-    if (RegExp(r'\b(louer|location|loyer|à louer)\b').hasMatch(text)) {
-      transactionType = 'location';
-    } else if (RegExp(r'\b(acheter|achat|vente|vendre|à vendre)\b')
-        .hasMatch(text)) {
-      transactionType = 'achat';
+    String? transactionType = current.transactionType;
+    if (transactionType == null) {
+      if (RegExp(r'\b(louer|location|loyer|à louer)\b').hasMatch(text) ||
+          RegExp(r'€\s*/\s*mois').hasMatch(text)) {
+        transactionType = 'location';
+      } else if (RegExp(r'\b(acheter|achat|vente|vendre|à vendre)\b')
+          .hasMatch(text)) {
+        transactionType = 'achat';
+      }
     }
 
     // Type de bien
-    String? propertyType;
-    if (RegExp(r'\b(appartement|appart\b|studio|duplex|triplex|loft)\b')
-        .hasMatch(text)) {
-      propertyType = 'appartement';
-    } else if (RegExp(r'\b(maison|villa|pavillon|chalet)\b').hasMatch(text)) {
-      propertyType = 'maison';
+    String? propertyType = current.propertyType;
+    if (propertyType == null) {
+      if (RegExp(r'\b(appartement|appart\b|studio|duplex|triplex|loft)\b')
+          .hasMatch(text)) {
+        propertyType = 'appartement';
+      } else if (RegExp(r'\b(maison|villa|pavillon|chalet)\b').hasMatch(text)) {
+        propertyType = 'maison';
+      }
     }
 
     // Étage
@@ -381,25 +391,29 @@ class ListingParserService {
     }
 
     // DPE
-    String? dpe;
-    final dpeRe = RegExp(
-      r'\bdpe\s*:?\s*([a-g])\b|classe\s+([a-g])\b|lettre\s+([a-g])\b',
-      caseSensitive: false,
-    );
-    final dpeM = dpeRe.firstMatch(text);
-    if (dpeM != null) {
-      dpe = (dpeM.group(1) ?? dpeM.group(2) ?? dpeM.group(3))?.toUpperCase();
+    String? dpe = current.dpe;
+    if (dpe == null) {
+      final dpeRe = RegExp(
+        r'\bdpe\s*:?\s*([a-g])\b|classe\s+([a-g])\b|lettre\s+([a-g])\b',
+        caseSensitive: false,
+      );
+      final dpeM = dpeRe.firstMatch(text);
+      if (dpeM != null) {
+        dpe = (dpeM.group(1) ?? dpeM.group(2) ?? dpeM.group(3))?.toUpperCase();
+      }
     }
 
     // GES
-    String? gesClass;
-    final gesRe = RegExp(
-      r'\bges\s*:?\s*([a-g])\b|émissions?\s+ges\s*:?\s*([a-g])\b',
-      caseSensitive: false,
-    );
-    final gesM = gesRe.firstMatch(text);
-    if (gesM != null) {
-      gesClass = (gesM.group(1) ?? gesM.group(2))?.toUpperCase();
+    String? gesClass = current.gesClass;
+    if (gesClass == null) {
+      final gesRe = RegExp(
+        r'\bges\s*:?\s*([a-g])\b|émissions?\s+ges\s*:?\s*([a-g])\b',
+        caseSensitive: false,
+      );
+      final gesM = gesRe.firstMatch(text);
+      if (gesM != null) {
+        gesClass = (gesM.group(1) ?? gesM.group(2))?.toUpperCase();
+      }
     }
 
     // Charges
@@ -415,19 +429,33 @@ class ListingParserService {
       charges = double.tryParse(raw ?? '');
     }
 
-    // Équipements booléens
+    // Équipements booléens (contexte négatif détecté avant positif)
     final hasBalcony =
         current.hasBalcony ?? (text.contains('balcon') ? true : null);
     final hasTerrace =
         current.hasTerrace ?? (text.contains('terrasse') ? true : null);
-    final hasGarden =
-        current.hasGarden ?? (text.contains('jardin') ? true : null);
-    final hasParking = current.hasParking ??
-        (RegExp(r'\b(parking|garage|stationnement)\b').hasMatch(text)
-            ? true
-            : null);
-    final hasCellar =
-        current.hasCellar ?? (text.contains('cave') ? true : null);
+    bool? gardenDetected;
+    if (RegExp(r'(?:sans|pas\s+de|aucun(?:e)?)\s+jardin\b').hasMatch(text)) {
+      gardenDetected = false;
+    } else if (text.contains('jardin')) {
+      gardenDetected = true;
+    }
+    final hasGarden = current.hasGarden ?? gardenDetected;
+    bool? parkingDetected;
+    if (RegExp(r'(?:sans|pas\s+de|aucun(?:e)?|ni)\s+(?:parking|garage|stationnement)\b')
+        .hasMatch(text)) {
+      parkingDetected = false;
+    } else if (RegExp(r'\b(parking|garage|stationnement)\b').hasMatch(text)) {
+      parkingDetected = true;
+    }
+    final hasParking = current.hasParking ?? parkingDetected;
+    bool? cellarDetected;
+    if (RegExp(r'(?:sans|pas\s+de|aucun(?:e)?)\s+cave\b').hasMatch(text)) {
+      cellarDetected = false;
+    } else if (text.contains('cave')) {
+      cellarDetected = true;
+    }
+    final hasCellar = current.hasCellar ?? cellarDetected;
 
     // Ascenseur
     final hasElevator =
@@ -459,6 +487,10 @@ class ListingParserService {
     // Moulures
     final hasMouldings =
         RegExp(r'\bmoulures?\b').hasMatch(text) ? true : null;
+
+    // Fibre
+    final fiber =
+        RegExp(r'fibr[eé]|ftth|\bthd\b').hasMatch(text) ? true : null;
 
     // Chambres
     int? bedrooms = current.bedrooms;
@@ -659,6 +691,7 @@ class ListingParserService {
       energyConsumption: energyConsumption,
       agencyFees: agencyFees,
       isAgency: isAgency,
+      fiber: fiber,
       description: current.description,
     );
   }

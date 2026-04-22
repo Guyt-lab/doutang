@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'enums.dart';
 import 'listing_contact.dart';
 import 'listing_facts.dart';
+import 'visit.dart';
 
 const _uuid = Uuid();
 
@@ -35,6 +36,9 @@ class Listing {
   /// Noms des champs remplis automatiquement par le parser (clés JSON).
   final Set<String> autoFilledFields;
 
+  /// Réponses de visite pré-remplies par le parser (non encore validées par visite réelle).
+  final VisitAnswers? preFilledAnswers;
+
   Listing({
     String? id,
     this.url,
@@ -53,6 +57,7 @@ class Listing {
     this.propertyKind,
     this.transactionKind,
     Set<String>? autoFilledFields,
+    this.preFilledAnswers,
   })  : id = id ?? _uuid.v4(),
         status = status ?? ListingStatus.aContacter,
         notes = notes ?? '',
@@ -78,6 +83,8 @@ class Listing {
     ListingTransactionKind? transactionKind,
     bool clearTransactionKind = false,
     Set<String>? autoFilledFields,
+    VisitAnswers? preFilledAnswers,
+    bool clearPreFilledAnswers = false,
   }) {
     return Listing(
       id: id,
@@ -100,6 +107,9 @@ class Listing {
           ? null
           : (transactionKind ?? this.transactionKind),
       autoFilledFields: autoFilledFields ?? this.autoFilledFields,
+      preFilledAnswers: clearPreFilledAnswers
+          ? null
+          : (preFilledAnswers ?? this.preFilledAnswers),
     );
   }
 
@@ -121,6 +131,7 @@ class Listing {
         'property_kind': propertyKind?.name,
         'transaction_kind': transactionKind?.name,
         'auto_filled_fields': autoFilledFields.toList(),
+        'pre_filled_answers': preFilledAnswers?.toJson(),
       };
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
@@ -151,6 +162,10 @@ class Listing {
             ListingTransactionKind.values, json['transaction_kind'] as String?),
         autoFilledFields:
             Set<String>.from(json['auto_filled_fields'] as List? ?? []),
+        preFilledAnswers: json['pre_filled_answers'] != null
+            ? VisitAnswers.fromJson(
+                json['pre_filled_answers'] as Map<String, dynamic>)
+            : null,
       );
 }
 

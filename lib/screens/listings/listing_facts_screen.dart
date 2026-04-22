@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../../models/enums.dart';
 import '../../models/listing.dart';
 import '../../models/listing_facts.dart';
+import '../../models/visit.dart';
+import '../../services/facts_sync_service.dart';
 import '../../services/listing_storage_service.dart';
 import '../../services/project_service.dart';
 import '../../theme/doutang_theme.dart';
@@ -222,6 +224,11 @@ class _ListingFactsScreenState extends State<ListingFactsScreen> {
       charges: double.tryParse(_chargesCtrl.text),
     );
 
+    final syncedAnswers = FactsSyncService.syncFactsToAnswers(
+      facts,
+      widget.listing.preFilledAnswers ?? VisitAnswers(),
+    );
+
     final priceText = _priceCtrl.text.trim();
     final updated = Listing(
       id: widget.listing.id,
@@ -241,6 +248,7 @@ class _ListingFactsScreenState extends State<ListingFactsScreen> {
       propertyKind: widget.listing.propertyKind,
       transactionKind: widget.listing.transactionKind,
       autoFilledFields: widget.listing.autoFilledFields,
+      preFilledAnswers: syncedAnswers,
     );
 
     await ListingStorageService.update(updated, projectId: projectId);
@@ -303,7 +311,7 @@ class _ListingFactsScreenState extends State<ListingFactsScreen> {
       initiallyExpanded: true,
       children: [
         _fieldRow(
-          isAchat ? 'Prix d\'achat (€)' : 'Loyer HC (€/mois)',
+          isAchat ? 'Prix d\'achat (€)' : 'Loyer mensuel (€/mois)',
           _numField(_priceCtrl, '0', af: _af.contains('price')),
           af: _af.contains('price'),
         ),

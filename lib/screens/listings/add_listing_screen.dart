@@ -10,7 +10,6 @@ import '../../services/listing_parser_service.dart';
 import '../../services/listing_storage_service.dart';
 import '../../services/profile_storage_service.dart';
 import '../../services/project_service.dart';
-import '../../services/visit_storage_service.dart';
 import '../../theme/doutang_theme.dart';
 
 class AddListingScreen extends StatefulWidget {
@@ -94,8 +93,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
         // Pre-fill facts from existing listing
         final facts = arg.facts;
         if (facts.dpe != null) _dpeController.text = facts.dpe!;
-        if (facts.floor != null)
+        if (facts.floor != null) {
           _floorController.text = facts.floor!.toString();
+        }
         if (facts.charges != null) {
           _chargesController.text = facts.charges!.toInt().toString();
         }
@@ -237,7 +237,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
     });
 
     final count = parsed.extractedCount;
-    if (count > 1 && mounted) {
+    if (count > 5 && mounted) {
+      _showExtractedSheet(parsed);
+    } else if (count > 1 && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$count informations extraites depuis l\'annonce'),
@@ -245,6 +247,75 @@ class _AddListingScreenState extends State<AddListingScreen> {
         ),
       );
     }
+  }
+
+  void _showExtractedSheet(ParsedListing parsed) {
+    final fields = <String>[
+      if (parsed.title != null) 'Titre',
+      if (parsed.price != null) 'Prix',
+      if (parsed.surface != null) 'Surface',
+      if (parsed.address != null) 'Adresse',
+      if (parsed.propertyType != null) 'Type de bien',
+      if (parsed.transactionType != null) 'Transaction',
+      if (parsed.floor != null) 'Étage',
+      if (parsed.dpe != null) 'DPE',
+      if (parsed.gesClass != null) 'GES',
+      if (parsed.charges != null) 'Charges',
+      if (parsed.hasBalcony != null) 'Balcon',
+      if (parsed.hasTerrace != null) 'Terrasse',
+      if (parsed.hasGarden != null) 'Jardin',
+      if (parsed.hasParking != null) 'Parking',
+      if (parsed.hasCellar != null) 'Cave',
+      if (parsed.isFurnished != null) 'Meublé',
+      if (parsed.heatingType != null) 'Chauffage',
+      if (parsed.heatingCollective != null) 'Mode chauffage',
+      if (parsed.hotWaterCollective != null) 'Eau chaude',
+      if (parsed.bedrooms != null) 'Chambres',
+      if (parsed.floorsTotal != null) 'Étages immeuble',
+      if (parsed.hasElevator != null) 'Ascenseur',
+      if (parsed.hasIntercom != null) 'Digicode',
+      if (parsed.hasBikeStorage != null) 'Local vélos',
+      if (parsed.balconySurface != null) 'Surface balcon',
+      if (parsed.terraceSurface != null) 'Surface terrasse',
+      if (parsed.gardenSurface != null) 'Surface jardin',
+      if (parsed.hasFireplace != null) 'Cheminée',
+      if (parsed.hasBeams != null) 'Poutres',
+      if (parsed.hasMouldings != null) 'Moulures',
+      if (parsed.kitchenType != null) 'Cuisine',
+      if (parsed.constructionYear != null) 'Année construction',
+      if (parsed.energyConsumption != null) 'Conso. énergie',
+      if (parsed.agencyFees != null) 'Honoraires',
+      if (parsed.isAgency != null) 'Agence/particulier',
+      if (parsed.fiber != null) 'Fibre',
+    ];
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+            DSpacing.md, DSpacing.md, DSpacing.md, DSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${fields.length} champs extraits depuis l\'annonce',
+              style: Theme.of(ctx).textTheme.titleMedium,
+            ),
+            const SizedBox(height: DSpacing.sm),
+            Wrap(
+              spacing: DSpacing.sm,
+              runSpacing: DSpacing.sm,
+              children: fields
+                  .map((f) => Chip(
+                        label: Text(f, style: const TextStyle(fontSize: 12)),
+                        visualDensity: VisualDensity.compact,
+                      ))
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _checkCoherence(ParsedListing parsed) {
@@ -344,23 +415,13 @@ class _AddListingScreenState extends State<AddListingScreen> {
       propertyKind: _propertyKind,
       transactionKind: _transactionKind,
       autoFilledFields: _autoFilledFields,
+      preFilledAnswers: _isEditMode ? _editingListing?.preFilledAnswers : _parsedAnswers,
     );
 
     if (_isEditMode) {
       await ListingStorageService.update(listing, projectId: projectId);
     } else {
       await ListingStorageService.add(listing, projectId: projectId);
-      // Pré-remplir une visite si le parser a extrait des réponses utiles
-      if (_parsedAnswers != null) {
-        final existingVisits =
-            await VisitStorageService.load(projectId: projectId);
-        existingVisits.add(Visit(
-          listingId: listing.id,
-          owner: owner,
-          answers: _parsedAnswers!,
-        ));
-        await VisitStorageService.save(existingVisits, projectId: projectId);
-      }
     }
 
     if (mounted) {

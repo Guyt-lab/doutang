@@ -357,6 +357,7 @@ class ListingFacts {
         hasBeams: p.hasBeams,
         hasMouldings: p.hasMouldings,
         kitchenType: _kitchenTypeFromString(p.kitchenType),
+        fiber: p.fiber,
         charges: p.charges,
       );
 

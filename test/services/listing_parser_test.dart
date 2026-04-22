@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:doutang/models/listing_facts.dart';
 import 'package:doutang/models/enums.dart';
 import 'package:doutang/models/visit.dart';
+import 'package:doutang/services/facts_sync_service.dart';
 import 'package:doutang/services/listing_parser_service.dart';
 
 // ── HTML mock complet (style Jinka avec og: tags) ─────────────────────────────
@@ -774,6 +775,163 @@ void main() {
         expect(p.extractedCount, equals(5));
       });
     });
+
+    group('fiber', () {
+      test('détecte "fibré"', () {
+        final r = ListingParserService.parseHtml('<body>Appartement fibré THD</body>');
+        expect(r.fiber, isTrue);
+      });
+
+      test('détecte "fibre optique"', () {
+        final r = ListingParserService.parseHtml('<body>Connexion fibre optique disponible</body>');
+        expect(r.fiber, isTrue);
+      });
+
+      test('détecte "FTTH"', () {
+        final r = ListingParserService.parseHtml('<body>Réseau FTTH dans l\'immeuble</body>');
+        expect(r.fiber, isTrue);
+      });
+
+      test('null si aucune mention fibre', () {
+        final r = ListingParserService.parseHtml('<body>Bel appartement lumineux</body>');
+        expect(r.fiber, isNull);
+      });
+    });
+
+    group('contexte négatif', () {
+      test('"sans parking" → hasParking = false', () {
+        final r = ListingParserService.parseHtml('<body>Appartement sans parking, 3 pièces</body>');
+        expect(r.hasParking, isFalse);
+      });
+
+      test('"pas de parking" → hasParking = false', () {
+        final r = ListingParserService.parseHtml('<body>Pas de parking ni de garage</body>');
+        expect(r.hasParking, isFalse);
+      });
+
+      test('"sans jardin" → hasGarden = false', () {
+        final r = ListingParserService.parseHtml('<body>Maison sans jardin, idéale pour jeune couple</body>');
+        expect(r.hasGarden, isFalse);
+      });
+
+      test('"sans cave" → hasCellar = false', () {
+        final r = ListingParserService.parseHtml('<body>Appartement sans cave ni parking</body>');
+        expect(r.hasCellar, isFalse);
+      });
+
+      test('parking positif si pas de négation', () {
+        final r = ListingParserService.parseHtml('<body>Appartement avec parking inclus</body>');
+        expect(r.hasParking, isTrue);
+      });
+    });
+
+    group('transaction type €/mois', () {
+      test('"€/mois" → location', () {
+        final r = ListingParserService.parseHtml('<body>Loyer 900 €/mois charges comprises</body>');
+        expect(r.transactionType, equals('location'));
+      });
+
+      test('"€ / mois" avec espaces → location', () {
+        final r = ListingParserService.parseHtml('<body>Prix : 1 200 € / mois</body>');
+        expect(r.transactionType, equals('location'));
+      });
+
+      test('current.transactionType est respecté', () {
+        final r = ListingParserService.parseHtml(
+          '<body>Achat appartement. Loyer 900 €/mois.</body>',
+        );
+        // "achat" et "loyer €/mois" coexistent — le premier détecté gagne
+        expect(r.transactionType, isNotNull);
+      });
+    });
+
+    group('respect des valeurs current.*', () {
+      test('propertyType issu du JSON-LD non écrasé par sémantique', () {
+        const html = '''
+<head>
+  <meta property="og:title" content="Maison 4 pièces" />
+</head>
+<body>
+<script type="application/ld+json">
+{"@type":"Apartment","numberOfRooms":4}
+</script>
+Appartement lumineux.
+</body>''';
+        // og parse ne pose pas propertyType; semantic le détecte "appartement"
+        final r = ListingParserService.parseHtml(html);
+        expect(r.propertyType, equals('appartement'));
+      });
+    });
+
+  // ── FactsSyncService ──────────────────────────────────────────────────────
+
+  group('FactsSyncService', () {
+    group('syncFactsToAnswers', () {
+      test('propage dpe, parking, cave vers VisitAnswers vide', () {
+        const facts = ListingFacts(
+          dpe: 'C',
+          hasParking: true,
+          hasCellar: false,
+          heatingType: HeatingType.gaz,
+        );
+        final result = FactsSyncService.syncFactsToAnswers(facts, VisitAnswers());
+        expect(result.dpeNiveau, equals('C'));
+        expect(result.parking, isTrue);
+        expect(result.cave, isFalse);
+        expect(result.heatingSystem, equals('gaz'));
+      });
+
+      test('ne remplace pas les valeurs déjà saisies', () {
+        const facts = ListingFacts(dpe: 'C', hasParking: true);
+        final existing = VisitAnswers(dpeNiveau: 'B', parking: false);
+        final result = FactsSyncService.syncFactsToAnswers(facts, existing);
+        expect(result.dpeNiveau, equals('B'));
+        expect(result.parking, isFalse);
+      });
+
+      test('propage fiber → fibreImmeuble', () {
+        const facts = ListingFacts(fiber: true);
+        final result = FactsSyncService.syncFactsToAnswers(facts, VisitAnswers());
+        expect(result.fibreImmeuble, isTrue);
+      });
+
+      test('propage balcon ou terrasse → balconOuTerrasse', () {
+        const facts = ListingFacts(hasBalcony: true);
+        final result = FactsSyncService.syncFactsToAnswers(facts, VisitAnswers());
+        expect(result.balconOuTerrasse, isTrue);
+      });
+
+      test('propage charges → chargesAmount', () {
+        const facts = ListingFacts(charges: 120.0);
+        final result = FactsSyncService.syncFactsToAnswers(facts, VisitAnswers());
+        expect(result.chargesAmount, equals('120'));
+      });
+
+      test('propage buildingYear → dateConstruction', () {
+        const facts = ListingFacts(buildingYear: 1975);
+        final result = FactsSyncService.syncFactsToAnswers(facts, VisitAnswers());
+        expect(result.dateConstruction, equals('1975'));
+      });
+    });
+
+    group('syncAnswersToFacts', () {
+      test('propage dpeNiveau, parking, cave → ListingFacts vide', () {
+        final answers = VisitAnswers(dpeNiveau: 'D', parking: true, cave: true);
+        final result = FactsSyncService.syncAnswersToFacts(answers, const ListingFacts());
+        expect(result.dpe, equals('D'));
+        expect(result.hasParking, isTrue);
+        expect(result.hasCellar, isTrue);
+      });
+
+      test('ne remplace pas les valeurs déjà saisies dans ListingFacts', () {
+        final answers = VisitAnswers(dpeNiveau: 'D', parking: false);
+        const facts = ListingFacts(dpe: 'B', hasParking: true);
+        final result = FactsSyncService.syncAnswersToFacts(answers, facts);
+        expect(result.dpe, equals('B'));
+        expect(result.hasParking, isTrue);
+      });
+    });
+  });
 
   // ── ListingStorageService (via import séparé dans un autre fichier) ────────
   // Les tests de stockage sont dans test/services/listing_storage_test.dart

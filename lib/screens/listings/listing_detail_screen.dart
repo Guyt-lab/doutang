@@ -386,13 +386,22 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     final projectId = await ProjectService.getActiveId() ?? '';
     final profile = await ProfileStorageService.load(projectId: projectId);
     if (!mounted) return;
+    final owner = profile?.owner ?? 'Moi';
+    final initialVisit = existingVisit ??
+        (listing.preFilledAnswers != null
+            ? Visit(
+                listingId: listing.id,
+                owner: owner,
+                answers: listing.preFilledAnswers!,
+              )
+            : null);
     await Navigator.pushNamed(
       context,
       AppRoutes.visitStart,
       arguments: {
         'listing': listing,
-        'profile': profile ?? UserProfile(owner: 'Moi'),
-        if (existingVisit != null) 'existingVisit': existingVisit,
+        'profile': profile ?? UserProfile(owner: owner),
+        if (initialVisit != null) 'existingVisit': initialVisit,
       },
     );
     await _loadData();
