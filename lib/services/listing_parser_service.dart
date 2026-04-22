@@ -274,8 +274,7 @@ class ListingParserService {
           if (item is! Map<String, dynamic>) continue;
 
           // titre
-          title ??=
-              (item['name'] as String?) ?? (item['headline'] as String?);
+          title ??= (item['name'] as String?) ?? (item['headline'] as String?);
 
           // description
           description ??= item['description'] as String?;
@@ -442,7 +441,8 @@ class ListingParserService {
     }
     final hasGarden = current.hasGarden ?? gardenDetected;
     bool? parkingDetected;
-    if (RegExp(r'(?:sans|pas\s+de|aucun(?:e)?|ni)\s+(?:parking|garage|stationnement)\b')
+    if (RegExp(
+            r'(?:sans|pas\s+de|aucun(?:e)?|ni)\s+(?:parking|garage|stationnement)\b')
         .hasMatch(text)) {
       parkingDetected = false;
     } else if (RegExp(r'\b(parking|garage|stationnement)\b').hasMatch(text)) {
@@ -458,8 +458,7 @@ class ListingParserService {
     final hasCellar = current.hasCellar ?? cellarDetected;
 
     // Ascenseur
-    final hasElevator =
-        RegExp(r'\bascenseur\b').hasMatch(text) ? true : null;
+    final hasElevator = RegExp(r'\bascenseur\b').hasMatch(text) ? true : null;
 
     // Digicode / interphone
     final hasIntercom =
@@ -485,12 +484,10 @@ class ListingParserService {
             : null;
 
     // Moulures
-    final hasMouldings =
-        RegExp(r'\bmoulures?\b').hasMatch(text) ? true : null;
+    final hasMouldings = RegExp(r'\bmoulures?\b').hasMatch(text) ? true : null;
 
     // Fibre
-    final fiber =
-        RegExp(r'fibr[eé]|ftth|\bthd\b').hasMatch(text) ? true : null;
+    final fiber = RegExp(r'fibr[eé]|ftth|\bthd\b').hasMatch(text) ? true : null;
 
     // Chambres
     int? bedrooms = current.bedrooms;
@@ -617,8 +614,7 @@ class ListingParserService {
     );
     final yearM = yearRe.firstMatch(text);
     if (yearM != null) {
-      constructionYear =
-          int.tryParse(yearM.group(1) ?? yearM.group(2) ?? '');
+      constructionYear = int.tryParse(yearM.group(1) ?? yearM.group(2) ?? '');
     }
 
     // Consommation énergétique (kWh/m²/an)
@@ -629,8 +625,8 @@ class ListingParserService {
     );
     final energyM = energyRe.firstMatch(text);
     if (energyM != null) {
-      energyConsumption = double.tryParse(
-          energyM.group(1)!.replaceAll(',', '.'));
+      energyConsumption =
+          double.tryParse(energyM.group(1)!.replaceAll(',', '.'));
     }
 
     // Honoraires d'agence
@@ -649,7 +645,8 @@ class ListingParserService {
     bool? isAgency;
     if (RegExp(r'\bparticulier\b|entre\s+particuliers?').hasMatch(text)) {
       isAgency = false;
-    } else if (RegExp(r'\bagence\s+immobili[eè]re\b|\bcabinet\s+immobilier\b|\bagence\b')
+    } else if (RegExp(
+            r'\bagence\s+immobili[eè]re\b|\bcabinet\s+immobilier\b|\bagence\b')
         .hasMatch(text)) {
       isAgency = true;
     }

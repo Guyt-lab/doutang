@@ -49,9 +49,11 @@ class FactsSyncService {
     }
 
     set('dpe', existing.dpeNiveau);
-    set('charges', existing.chargesAmount != null
-        ? double.tryParse(existing.chargesAmount!)
-        : null);
+    set(
+        'charges',
+        existing.chargesAmount != null
+            ? double.tryParse(existing.chargesAmount!)
+            : null);
     set('has_parking', existing.parking);
     set('has_cellar', existing.cave);
     set('secure_door', existing.secureDoorOk);

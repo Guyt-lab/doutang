@@ -415,7 +415,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
       propertyKind: _propertyKind,
       transactionKind: _transactionKind,
       autoFilledFields: _autoFilledFields,
-      preFilledAnswers: _isEditMode ? _editingListing?.preFilledAnswers : _parsedAnswers,
+      preFilledAnswers:
+          _isEditMode ? _editingListing?.preFilledAnswers : _parsedAnswers,
     );
 
     if (_isEditMode) {
